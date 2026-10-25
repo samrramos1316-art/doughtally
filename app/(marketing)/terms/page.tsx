@@ -59,7 +59,7 @@ const sections: LegalSection[] = [
       <>
         <p>You own the documents and information you put into DoughTally (&ldquo;your content&rdquo;). You give us permission to store, copy, process and display your content only as needed to run the Service for you, including sending it to the service providers named in our <Link href="/privacy">Privacy Policy</Link>. We don&apos;t sell it or use it to advertise.</p>
         <p>You confirm you have the right to upload your content. Don&apos;t upload documents that contain other people&apos;s personal information you aren&apos;t allowed to share, or payment card numbers.</p>
-        <p>You can export your ingredient list and costs at any time, and you can ask us to delete your account and data.</p>
+        <p>You can download a copy of all your data, or delete your account and data, at any time in Settings.</p>
       </>
     ),
   },

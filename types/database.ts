@@ -39,6 +39,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_usage: {
+        Row: { day: string; org_id: string; reads: number }
+        Insert: { day: string; org_id: string; reads?: number }
+        Update: { day?: string; org_id?: string; reads?: number }
+        Relationships: []
+      }
       commodity_price_series: {
         Row: {
           commodity_code: string

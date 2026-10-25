@@ -119,7 +119,9 @@ export class ClaudeVisionProvider implements VisionProvider {
 
     // Opt-in debugging: print Claude's response text verbatim, before the
     // SDK's parse, so it can be compared with what the pipeline stores.
-    if (process.env.VISION_DEBUG_RAW === "1") {
+    // Never in production: invoices carry other people's names and addresses,
+    // and logs are kept by the host.
+    if (process.env.VISION_DEBUG_RAW === "1" && process.env.NODE_ENV !== "production") {
       for (const block of response.content) {
         if (block.type === "text") console.log(`[vision-raw] ${response.id} ${block.text}`);
       }
