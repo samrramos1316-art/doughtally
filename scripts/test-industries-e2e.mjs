@@ -307,7 +307,7 @@ try {
   await fb.getByRole("button", { name: /^Save job$/i }).waitFor();
   const jobCost = async () => (await fb.locator("main").innerText()).replace(/\s+/g, " ").match(/÷ \d+ \w+ = \$[\d.]+ each/)?.[0] ?? "(none)";
   assert((await jobCost()).includes("$10.9522"), `before machine time: (69.5652 + 30) × 1.1 ÷ 10 = $10.9522: ${await jobCost()}`);
-  await fb.getByLabel("Machine minutes per batch").fill("45");
+  await fb.getByLabel("Machine minutes per job").fill("45");
   await fb.getByRole("button", { name: /^Save job$/i }).click();
   await fb.waitForLoadState("networkidle");
   await fb.reload();

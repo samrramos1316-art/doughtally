@@ -370,7 +370,7 @@ export function OnboardingImport({
     return null;
   };
   const recipeError = (d: RecipeDraft) =>
-    !d.include ? null : !d.name.trim() ? `Name the ${lower(v.recipe)}` : !(num(d.yieldQty) > 0) ? "How many does a batch make?" : d.lines.some(lineError) ? "Finish the highlighted lines" : null;
+    !d.include ? null : !d.name.trim() ? `Name the ${lower(v.recipe)}` : !(num(d.yieldQty) > 0) ? `How many does ${withArticle(v.batch)} make?` : d.lines.some(lineError) ? "Finish the highlighted lines" : null;
   const rowError = (m: MenuDraft) =>
     !m.include ? null : !m.name.trim() ? "Name" : !(num(m.price) >= 0) ? "Price" : m.servings.trim() !== "" && !(num(m.servings) > 0) ? "Servings" : null;
   const included = drafts.filter((d) => d.include);
@@ -580,7 +580,7 @@ export function OnboardingImport({
                           <th className={`${th} w-8`} />
                           <th className={th}>As written</th>
                           <th className={th}>{v.ingredient}</th>
-                          <th className={`${th} w-28 text-right`}>Qty per batch</th>
+                          <th className={`${th} w-28 text-right`}>Qty per {v.batch}</th>
                           <th className={`${th} w-28`}>Unit</th>
                         </tr>
                       </thead>
@@ -709,7 +709,7 @@ export function OnboardingImport({
                           </td>
                           <td className="px-2 py-1.5">
                             <input
-                              aria-label={`${cap(v.servings)} per batch for ${m.name}`}
+                              aria-label={`${cap(v.servings)} per ${v.batch} for ${m.name}`}
                               inputMode="decimal"
                               disabled={!m.recipe}
                               className={`${cell} text-right tabular-nums disabled:bg-stone-50 ${err === "Servings" ? "border-red-400 bg-red-50" : ""}`}

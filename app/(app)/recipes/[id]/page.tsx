@@ -99,14 +99,14 @@ export default async function RecipeDetailPage({ params }: { params: Promise<{ i
         />
       </div>
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-        <Panel title={`${v.ingredients} in one batch — edit and save`} className="xl:col-span-7">
+        <Panel title={`${v.ingredients} in one ${v.batch} — edit and save`} className="xl:col-span-7">
           <RecipeBuilder
             recipeId={id}
             ingredientOptions={allIngredients ?? []}
             initialRows={initialRows}
             initialLabor={{ labor_minutes: laborOverhead.laborMinutes, labor_rate_per_hour: laborOverhead.laborRatePerHour, overhead_pct: laborOverhead.overheadPct }}
             defaultLaborRate={defaultLaborRate}
-            labels={{ ingredient: v.ingredient, ingredients: v.ingredients, recipe: lower(v.recipe) }}
+            labels={{ ingredient: v.ingredient, ingredients: v.ingredients, recipe: lower(v.recipe), batch: v.batch }}
             defaultWastePct={industry.defaults.default_waste_pct}
             showLaborByDefault={industry.defaults.show_labor_by_default}
             machine={machineFields ? { minutes: laborOverhead.machineMinutes, ratePerHour: laborOverhead.machineRatePerHour, defaultRate: Number(org?.default_machine_rate_per_hour ?? 0) } : undefined}

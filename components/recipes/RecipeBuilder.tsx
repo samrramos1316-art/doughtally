@@ -45,7 +45,7 @@ export function RecipeBuilder({
   initialRows: Row[];
   initialLabor: LaborOverheadValues;
   defaultLaborRate: number;
-  labels?: { ingredient: string; ingredients: string; recipe: string };
+  labels?: { ingredient: string; ingredients: string; recipe: string; batch?: string };
   // From the industry profile (lib/industries): with a default waste % the
   // waste column starts visible, and the labor section starts open. 0 /
   // false for food.
@@ -236,7 +236,7 @@ export function RecipeBuilder({
       <details open={hasLabor} className="rounded-lg border border-stone-200 bg-stone-50/60">
         <summary className="cursor-pointer px-3 py-2 text-sm font-medium text-stone-800">Labor{machine ? ", machine time" : ""} &amp; overhead <span className="font-normal text-stone-500">(optional)</span></summary>
         <div className="grid gap-3 border-t border-stone-200 p-3 sm:grid-cols-3">
-          {field("labor_minutes", "Labor minutes per batch", "Hands-on time to make one batch.")}
+          {field("labor_minutes", `Labor minutes per ${labels.batch ?? "batch"}`, `Hands-on time to make one ${labels.batch ?? "batch"}.`)}
           {field(
             "labor_rate_per_hour",
             "Hourly rate ($)",
@@ -244,7 +244,7 @@ export function RecipeBuilder({
             defaultLaborRate > 0 ? defaultLaborRate.toFixed(2) : "",
           )}
           {field("overhead_pct", "Overhead %", machine ? "Added on top of materials, labor and machine time (rent, power, consumables)." : "Added on top of materials and labor (rent, power, packaging).")}
-          {machine && field("machine_minutes", "Machine minutes per batch", "Run time on the laser, brake, saw or CNC.")}
+          {machine && field("machine_minutes", `Machine minutes per ${labels.batch ?? "batch"}`, "Run time on the laser, brake, saw or CNC.")}
           {machine &&
             field(
               "machine_rate_per_hour",

@@ -27,7 +27,7 @@ export default async function RecipesPage() {
     <>
       <PageHeader
         title={v.recipes}
-        subtitle={`What each batch costs to make, live from today's ${lower(v.ingredient)} prices`}
+        subtitle={`What each ${v.batch} costs to make, live from today's ${lower(v.ingredient)} prices`}
         actions={
           <ButtonLink href="/onboarding/import?kind=recipe" primary>
             <CameraIcon /> Import {lower(v.recipes)} from a photo
