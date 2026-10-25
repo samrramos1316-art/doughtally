@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/legal/LegalPage";
-import { COMPANY, CONTACT_EMAIL, SITE } from "@/lib/legal";
+import { COMPANY, CONTACT_EMAIL, PRIVACY_UPDATED, SITE } from "@/lib/legal";
 
 export const metadata: Metadata = { title: "Privacy Policy · DoughTally Software" };
 export const viewport: Viewport = { themeColor: "#0c0b09" };
@@ -98,6 +98,7 @@ const sections: LegalSection[] = [
         <p>We keep your data for as long as you have an account. You can edit or delete individual ingredients, recipes, menu items and invoice lines at any time, and export your ingredient list and costs as a CSV whenever you like.</p>
         <p>To close your account and delete your data, email {mail} from the address on the account. We&apos;ll delete it from the live service within 30 days; copies in backups age out on our providers&apos; normal schedules. You can also ask us for a copy of your data, or to correct it.</p>
         <p>Depending on where you live, you may have further rights under laws such as the GDPR or the California Consumer Privacy Act, including the right to know, access, correct or delete personal information and to not be discriminated against for using them. Email us and we&apos;ll respond within the time the law requires.</p>
+        <p><strong>Do Not Track and Global Privacy Control.</strong> We don&apos;t track you across other websites or let anyone else do so on ours, and we don&apos;t sell or share personal information for advertising, so there is nothing for these browser signals to switch off. The site works the same whether or not your browser sends them.</p>
       </>
     ),
   },
@@ -134,6 +135,7 @@ export default function PrivacyPage() {
         </p>
       }
       sections={sections}
+      updated={PRIVACY_UPDATED}
     />
   );
 }
