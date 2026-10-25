@@ -6,9 +6,19 @@
 //   - keeps Next's hashed static files (/_next/static/…) and the icons, which
 //     never change once published, so the app shell loads fast.
 // Bump VERSION to drop old caches after changing this file or the icons.
-const VERSION = "v3";
+const VERSION = "v4";
 const CACHE = `doughtally-${VERSION}`;
 const OFFLINE_URL = "/offline";
+// Hashed files from older deploys are never requested again but would stay
+// cached forever (one cache name across deploys), so keep only the newest
+// MAX_ENTRIES; the offline page and icons are always kept.
+const MAX_ENTRIES = 150;
+
+async function trim(cache) {
+  const keys = (await cache.keys()).filter((req) => new URL(req.url).pathname.startsWith("/_next/static/"));
+  // cache.keys() lists entries oldest first.
+  for (const req of keys.slice(0, Math.max(0, keys.length - MAX_ENTRIES))) await cache.delete(req);
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -57,7 +67,12 @@ self.addEventListener("fetch", (event) => {
         const cached = await caches.match(request);
         if (cached) return cached;
         const res = await fetch(request);
-        if (res.ok) (await caches.open(CACHE)).put(request, res.clone());
+        if (res.ok) {
+          const cache = await caches.open(CACHE);
+          await cache.put(request, res.clone());
+          // In the background: if it's cut short, the next fetch finishes it.
+          trim(cache).catch(() => {});
+        }
         return res;
       })(),
     );

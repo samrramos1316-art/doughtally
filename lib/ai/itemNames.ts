@@ -3,7 +3,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 
 // Fast, text-only: this runs while the owner waits on "Save lines".
-const MODEL = "claude-haiku-4-5";
+const MODEL = "claude-haiku-5-5";
 
 const Schema = z.object({
   items: z.array(z.object({ index: z.number().int(), item_name: z.string().nullable() })),
@@ -24,12 +24,14 @@ export async function expandItemNames(rawTexts: string[]): Promise<(string | nul
     const client = apiKey ? new Anthropic({ apiKey }) : new Anthropic();
     const response = await client.messages.parse({
       model: MODEL,
-      max_tokens: 4000,
+      // Room for up to 200 names plus the model's (adaptive) thinking.
+      max_tokens: 8000,
       system: SYSTEM_PROMPT,
       messages: [
         { role: "user", content: JSON.stringify(rawTexts.map((raw_text, index) => ({ index, raw_text }))) },
       ],
-      output_config: { format: zodOutputFormat(Schema) },
+      // Haiku 5.5 thinks by default; low effort keeps "Save lines" quick.
+      output_config: { effort: "low", format: zodOutputFormat(Schema) },
     });
     const out: (string | null)[] = rawTexts.map(() => null);
     for (const item of response.parsed_output?.items ?? []) {

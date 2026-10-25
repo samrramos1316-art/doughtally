@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { cookies } from "next/headers";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { ONBOARDING_URL } from "@/lib/onboarding/paths";
 import { createClient } from "@/lib/supabase/server";
-import type { LoginErrorCode } from "@/lib/auth/loginErrors";
+import { RESET_COOKIE, type LoginErrorCode } from "@/lib/auth/loginErrors";
 
 // Where the signup confirmation email lands. Supabase sends either a PKCE
 // `code` (its default link, via /auth/v1/verify) or a `token_hash` + `type`
@@ -15,6 +16,10 @@ export async function GET(request: NextRequest) {
   const tokenHash = url.searchParams.get("token_hash");
   const type = url.searchParams.get("type") as EmailOtpType | null;
   const supabase = await createClient();
+  // A password reset (the forgot-password form set the cookie, or the link
+  // says so) ends on /reset-password instead of onboarding.
+  const jar = await cookies();
+  const reset = type === "recovery" || jar.get(RESET_COOKIE)?.value === "1";
 
   let message: LoginErrorCode | null = null;
   if (url.searchParams.get("error_description")) {
@@ -35,10 +40,14 @@ export async function GET(request: NextRequest) {
 
   if (message) {
     const login = new URL("/login", url);
-    login.searchParams.set("error", message);
+    login.searchParams.set("error", reset ? "reset_expired" : message);
     return NextResponse.redirect(login);
   }
-  // Only signup confirmations come through here: a new business starts at
-  // the menu/recipe import (§9.3).
+  if (reset) {
+    jar.delete(RESET_COOKIE);
+    return NextResponse.redirect(new URL("/reset-password", url));
+  }
+  // Otherwise a signup confirmation: a new business starts at the
+  // menu/recipe import (§9.3).
   return NextResponse.redirect(new URL(ONBOARDING_URL, url));
 }

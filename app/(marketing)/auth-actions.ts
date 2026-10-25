@@ -2,12 +2,14 @@
 
 import { redirect } from "next/navigation";
 import { CLOSED_MESSAGE, canUseApp } from "@/lib/access";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { loginSchema, signUpSchema } from "@/lib/validators/auth";
 import { ONBOARDING_URL } from "@/lib/onboarding/paths";
 import { LEGAL_VERSION } from "@/lib/legal";
 import { isIndustryEnabled } from "@/lib/industries/gate";
+import { RESET_COOKIE } from "@/lib/auth/loginErrors";
+import { z } from "zod";
 
 export type AuthActionState =
   | { error: string; unconfirmedEmail?: string; values?: Record<string, string> }
@@ -134,6 +136,43 @@ export async function resendConfirmationAction(_prevState: AuthActionState, form
   const { error } = await supabase.auth.resend({ type: "signup", email, options: { emailRedirectTo: await confirmUrl() } });
   if (error) return { error: friendly(error.message) };
   return { notice: `Sent a new confirmation link to ${email}. It can take a minute — check spam too.` };
+}
+
+// Forgot password: email a reset link. The answer is the same whether or
+// not the address has an account, so the form can't be used to find out.
+// Supabase's link only works in the browser that asked (PKCE), so a cookie
+// here tells /auth/confirm that the sign-in it finishes is a reset.
+export async function requestPasswordResetAction(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  const parsed = z.string().trim().email().max(254).safeParse(formData.get("email"));
+  if (!parsed.success) return { error: "Enter the email address you signed up with.", values: { email: String(formData.get("email") ?? "") } };
+  const email = parsed.data;
+  const sent = { notice: `If there's an account for ${email}, we've sent it a link to choose a new password. Open it in this browser within the hour — check spam too.` };
+  // Pre-launch: no mail to addresses that can't use the app anyway (lib/access.ts).
+  if (!canUseApp(email)) return sent;
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: await confirmUrl() });
+  if (error && /rate limit/i.test(error.message)) return { error: friendly(error.message), values: { email } };
+  if (error) console.error("[auth] password reset email failed:", error.message);
+  (await cookies()).set(RESET_COOKIE, "1", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 60 * 60 });
+  return sent;
+}
+
+// The reset link's sign-in landed here (app/(marketing)/reset-password):
+// set the new password on the signed-in account.
+export async function updatePasswordAction(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  const password = String(formData.get("password") ?? "");
+  const again = String(formData.get("passwordAgain") ?? "");
+  if (password.length < 8) return { error: "Password must be at least 8 characters" };
+  if (password.length > 72) return { error: "Password can be at most 72 characters" };
+  if (password !== again) return { error: "The two passwords don't match." };
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "This reset link has expired. Ask for a new one from the log-in page." };
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: friendly(error.message) };
+  redirect("/dashboard");
 }
 
 export async function logOutAction() {

@@ -396,10 +396,14 @@ then the live site.
   change is converted; CSV export guards formula cells; security headers;
   login error codes; forms keep what was typed; Settings → Delete account.
 
-Still open:
-- Password reset: needs working email first (see Known issues).
-- The service worker's static cache is never pruned between deploys.
-- Haiku 4.5 still expands typed invoice lines (`lib/ai/itemNames.ts`).
+Then:
+- Password reset: "Forgot your password?" on /login → `/forgot-password`
+  emails a link (same answer whether or not the account exists) →
+  `/auth/confirm` → `/reset-password`. The link only works in the browser
+  that asked (PKCE); a cookie marks that browser as mid-reset. Emails only
+  arrive once custom SMTP is set up (Known issues).
+- The service worker keeps the newest 150 static files (cache v4).
+- Typed invoice lines are expanded by Claude Haiku 5.5 at low effort.
 
 ## Not started yet
 

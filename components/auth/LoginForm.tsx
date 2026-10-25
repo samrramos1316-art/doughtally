@@ -18,6 +18,11 @@ export function LoginForm({ initialError }: { initialError?: string }) {
         {error && <FormMessage kind="error">{error}</FormMessage>}
         <Field id="email" label="Email" type="email" autoComplete="email" required placeholder="you@yourbusiness.com" defaultValue={typed?.email} />
         <PasswordField autoComplete="current-password" required />
+        <p className="-mt-2 text-right text-xs">
+          <Link href="/forgot-password" className="text-stone-600 underline hover:text-stone-900">
+            Forgot your password?
+          </Link>
+        </p>
         <SubmitButton pending={pending} pendingText="Logging in…">
           Log in
         </SubmitButton>
