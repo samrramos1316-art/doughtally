@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { selectAll } from "@/lib/supabase/selectAll";
 import type { Database } from "@/types/database";
 import { commodityFor } from "./categoryDefaults";
 import type { IndustryProfile } from "@/lib/industries";
@@ -55,12 +56,16 @@ export async function getMarketTrends(
   // Enough history for the window even when a monthly series lags ~2 months.
   const since = new Date(Date.now() - (windowDays + 120) * DAY).toISOString().slice(0, 10);
   const [{ data: rows, error }, { data: ingredients }] = await Promise.all([
-    supabase
-      .from("commodity_price_series")
-      .select("source, commodity_code, commodity_label, region, period_date, value, unit")
-      .in("commodity_code", codes)
-      .gte("period_date", since)
-      .order("period_date", { ascending: true }),
+    selectAll((a, b) =>
+      supabase
+        .from("commodity_price_series")
+        .select("source, commodity_code, commodity_label, region, period_date, value, unit")
+        .in("commodity_code", codes)
+        .gte("period_date", since)
+        .order("period_date", { ascending: true })
+        .order("id")
+        .range(a, b),
+    ),
     supabase.from("ingredients").select("name, category, commodity_code").order("name"),
   ]);
   if (error) throw new Error("loading commodity prices failed: " + error.message);

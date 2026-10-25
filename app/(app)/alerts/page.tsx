@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { selectAll } from "@/lib/supabase/selectAll";
 import { createClient } from "@/lib/supabase/server";
 import { Panel, Kpi, PageHeader, Pill, Delta, Empty, unitMoney, th, thNum, td, tdNum, row } from "@/components/ui/dash";
 import { getVocab } from "@/lib/supabase/vocab";
@@ -14,10 +15,14 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
   const { tab = "open" } = await searchParams;
   const supabase = await createClient();
   const [{ data: alerts, error }, { data: org }, v] = await Promise.all([
-    supabase
-      .from("price_alerts")
-      .select("id, previous_unit_cost, new_unit_cost, pct_change, acknowledged, created_at, ingredients(name, base_unit), invoices(invoice_number, invoice_date, vendors(name)), menu_item_margin_impacts(id, margin_pct_delta, menu_items(name))")
-      .order("created_at", { ascending: false }),
+    selectAll((a, b) =>
+      supabase
+        .from("price_alerts")
+        .select("id, previous_unit_cost, new_unit_cost, pct_change, acknowledged, created_at, ingredients(name, base_unit), invoices(invoice_number, invoice_date, vendors(name)), menu_item_margin_impacts(id, margin_pct_delta, menu_items(name))")
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(a, b),
+    ),
     supabase.from("organizations").select("price_alert_threshold_pct").maybeSingle(),
     getVocab(),
   ]);

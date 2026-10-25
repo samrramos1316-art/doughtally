@@ -6,7 +6,7 @@ import { z } from "zod";
 // Storage before this row is created (§4 API table).
 export const createInvoiceSchema = z.object({
   id: z.string().uuid(),
-  file_storage_path: z.string().min(1),
+  file_storage_path: z.string().min(1).max(300),
   file_type: z.enum(["image", "pdf"]).default("image"),
   vendor_id: z.string().uuid().optional().nullable(),
 });

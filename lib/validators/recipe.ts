@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_AMOUNT } from "./ingredient";
 
 // Waste, labor and overhead (migration 025) are optional everywhere: left
 // out, labor and overhead default to 0 (and the labor rate to null = the
@@ -6,8 +7,8 @@ import { z } from "zod";
 // (migration 027), so a food recipe costs what it always did.
 export const recipeIngredientSchema = z.object({
   ingredient_id: z.string().uuid(),
-  quantity: z.coerce.number().positive(),
-  unit: z.string().min(1),
+  quantity: z.coerce.number().positive().max(MAX_AMOUNT),
+  unit: z.string().trim().min(1).max(30),
   waste_pct: z.coerce.number().min(0, "Waste can't be negative").lt(100, "Waste must be under 100%").nullable().optional(),
 });
 
@@ -21,19 +22,19 @@ const laborOverhead = {
 };
 
 export const createRecipeSchema = z.object({
-  name: z.string().min(1),
-  batch_yield_qty: z.coerce.number().positive(),
-  batch_yield_unit: z.string().min(1),
-  notes: z.string().optional(),
+  name: z.string().trim().min(1, "Name is required").max(200),
+  batch_yield_qty: z.coerce.number().positive().max(MAX_AMOUNT),
+  batch_yield_unit: z.string().trim().min(1).max(60),
+  notes: z.string().max(5000).optional(),
   ...laborOverhead,
-  ingredients: z.array(recipeIngredientSchema).default([]),
+  ingredients: z.array(recipeIngredientSchema).max(300).default([]),
 });
 
 export const updateRecipeSchema = z.object({
-  name: z.string().min(1).optional(),
-  batch_yield_qty: z.coerce.number().positive().optional(),
-  batch_yield_unit: z.string().min(1).optional(),
-  notes: z.string().optional(),
+  name: z.string().trim().min(1, "Name is required").max(200).optional(),
+  batch_yield_qty: z.coerce.number().positive().max(MAX_AMOUNT).optional(),
+  batch_yield_unit: z.string().trim().min(1).max(60).optional(),
+  notes: z.string().max(5000).optional(),
   ...laborOverhead,
-  ingredients: z.array(recipeIngredientSchema).optional(),
+  ingredients: z.array(recipeIngredientSchema).max(300).optional(),
 });

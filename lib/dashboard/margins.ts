@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { selectAll } from "@/lib/supabase/selectAll";
 import type { Database } from "@/types/database";
 import { isoDaysAgo } from "@/lib/dates/localDate";
+import { costInBaseUnit } from "@/lib/costing/units";
 import { markupValue, targetLabel, targetMarginOf } from "@/lib/costing/markup";
 import { batchCost,effectiveWastePct, laborCost, laborOverheadOf, lineCost, machineCost, marginPctOf, overheadMultiplier, perServing, wasteMultiplier, type LaborOverhead } from "@/lib/costing/recipeCost";
 
@@ -90,12 +92,16 @@ export async function getMargins(supabase: Client, orgId: string) {
     supabase.from("recipes").select("id, name, batch_yield_qty, batch_yield_unit, labor_minutes, labor_rate_per_hour, overhead_pct, machine_minutes, machine_rate_per_hour"),
     supabase.from("recipe_ingredients").select("recipe_id, ingredient_id, quantity, waste_pct, ingredients(waste_pct)"),
     supabase.from("ingredients").select("id, name, base_unit, current_unit_cost").order("name"),
-    supabase.from("ingredient_price_history").select("ingredient_id, unit_cost, effective_date, created_at, vendors(name)").order("effective_date").order("created_at"),
-    supabase
-      .from("invoice_line_items")
-      .select("matched_ingredient_id, parsed_line_total, parsed_quantity, parsed_unit_cost, invoices!inner(invoice_date, created_at, status)")
-      .not("matched_ingredient_id", "is", null)
-      .neq("invoices.status", "failed"),
+    selectAll((a, b) => supabase.from("ingredient_price_history").select("ingredient_id, unit_cost, unit, effective_date, created_at, vendors(name)").order("effective_date").order("created_at").order("id").range(a, b)),
+    selectAll((a, b) =>
+      supabase
+        .from("invoice_line_items")
+        .select("matched_ingredient_id, parsed_line_total, parsed_quantity, parsed_unit_cost, invoices!inner(invoice_date, created_at, status)")
+        .not("matched_ingredient_id", "is", null)
+        .neq("invoices.status", "failed")
+        .order("id")
+        .range(a, b),
+    ),
   ]);
   const target = targetMarginOf(org.data);
   const targetText = targetLabel(org.data);
@@ -191,7 +197,11 @@ export async function getMargins(supabase: Client, orgId: string) {
   // ---- by ingredient ------------------------------------------------------
   const histByIng = new Map<string, { date: string; cost: number; vendor: string | null }[]>();
   for (const h of history.data ?? []) {
-    histByIng.set(h.ingredient_id, [...(histByIng.get(h.ingredient_id) ?? []), { date: h.effective_date, cost: Number(h.unit_cost), vendor: h.vendors?.name ?? null }]);
+    const cost = costInBaseUnit(Number(h.unit_cost), h.unit, ingById.get(h.ingredient_id)?.base_unit);
+    if (cost == null) continue;
+    const list = histByIng.get(h.ingredient_id) ?? [];
+    list.push({ date: h.effective_date, cost, vendor: h.vendors?.name ?? null });
+    histByIng.set(h.ingredient_id, list);
   }
   const costOn = (id: string, date: string) => {
     let found: number | null = null;

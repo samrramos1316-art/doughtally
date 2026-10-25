@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_AMOUNT } from "./ingredient";
 
 export const confirmLineItemSchema = z.object({
   ingredient_id: z.uuid(),
@@ -11,14 +12,14 @@ export const rejectLineItemSchema = z.object({
 });
 
 export const createIngredientFromLineItemSchema = z.object({
-  name: z.string().trim().min(1),
-  base_unit: z.string().trim().min(1),
-  category: z.string().trim().optional(),
+  name: z.string().trim().min(1).max(200),
+  base_unit: z.string().trim().min(1).max(30),
+  category: z.string().trim().max(60).optional(),
 });
 
 // §9.2 manual entry: one typed invoice row. Same fields the vision model
 // extracts (§5.3), so it runs through the same matching and price pipeline.
-const optionalNumber = z.number().nonnegative().nullable().optional();
+const optionalNumber = z.number().nonnegative().max(MAX_AMOUNT).nullable().optional();
 const optionalText = z.string().trim().max(50).nullable().optional();
 export const manualLineSchema = z.object({
   raw_text: z.string().trim().min(1, "Item is required").max(300),
@@ -26,7 +27,7 @@ export const manualLineSchema = z.object({
   unit: optionalText,
   unit_cost: optionalNumber,
   line_total: optionalNumber,
-  pack_quantity: z.number().positive().nullable().optional(),
+  pack_quantity: z.number().positive().max(MAX_AMOUNT).nullable().optional(),
   pack_unit: optionalText,
 });
 export const createManualLinesSchema = z.object({

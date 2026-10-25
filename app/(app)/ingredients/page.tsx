@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { selectAll } from "@/lib/supabase/selectAll";
 import { IngredientsGrid } from "@/components/ingredients/IngredientsGrid";
 import { isoDaysAgo } from "@/lib/dates/localDate";
 import { getVocab, getIndustry } from "@/lib/supabase/vocab";
@@ -22,11 +23,15 @@ export default async function IngredientsPage({ searchParams }: { searchParams: 
   ];
 
   if (tab === "movers" || tab === "history") {
-    const { data: history } = await supabase
-      .from("ingredient_price_history")
-      .select("id, ingredient_id, unit_cost, unit, effective_date, source, created_at, vendors(name), invoices(invoice_number)")
-      .order("effective_date", { ascending: true })
-      .order("created_at", { ascending: true });
+    const { data: history } = await selectAll((a, b) =>
+      supabase
+        .from("ingredient_price_history")
+        .select("id, ingredient_id, unit_cost, unit, effective_date, source, created_at, vendors(name), invoices(invoice_number)")
+        .order("effective_date", { ascending: true })
+        .order("created_at", { ascending: true })
+        .order("id")
+        .range(a, b),
+    );
     const hist = history ?? [];
     const byIng = new Map<string, typeof hist>();
     for (const h of hist) byIng.set(h.ingredient_id, [...(byIng.get(h.ingredient_id) ?? []), h]);

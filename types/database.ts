@@ -951,6 +951,7 @@ export type Database = {
         Args: { p_base_unit_cost: number; p_line_item_id: string }
         Returns: Json
       }
+      claim_ai_read: { Args: { p_limit: number }; Returns: boolean }
       current_org_id: { Args: never; Returns: string }
       match_ingredients: {
         Args: { match_count?: number; query_embedding: string }

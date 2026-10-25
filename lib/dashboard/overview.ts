@@ -1,7 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { selectAll } from "@/lib/supabase/selectAll";
 import type { Database } from "@/types/database";
 import { UNRESOLVED_STATUSES } from "@/lib/matching/review";
 import { isoDaysAgo } from "@/lib/dates/localDate";
+import { costInBaseUnit } from "@/lib/costing/units";
 import { markupValue, targetLabel, targetMarginOf } from "@/lib/costing/markup";
 import { lower, vocabFor, type Vocab } from "@/lib/vocab";
 import { batchCost, effectiveWastePct, lineCost, laborCost, laborOverheadOf as laborOverheadFor, machineCost, overheadMultiplier, perServing, marginPctOf, type LaborOverhead } from "@/lib/costing/recipeCost";
@@ -43,7 +45,7 @@ export async function getOverview(supabase: Client, orgId: string, v: Vocab = vo
     supabase.from("recipes").select("id, name, batch_yield_qty, labor_minutes, labor_rate_per_hour, overhead_pct, machine_minutes, machine_rate_per_hour"),
     supabase.from("recipe_ingredients").select("recipe_id, ingredient_id, quantity, waste_pct, ingredients(waste_pct)"),
     supabase.from("ingredients").select("id, name, base_unit, current_unit_cost"),
-    supabase.from("ingredient_price_history").select("ingredient_id, unit_cost, effective_date, created_at").order("effective_date").order("created_at"),
+    selectAll((a, b) => supabase.from("ingredient_price_history").select("ingredient_id, unit_cost, unit, effective_date, created_at").order("effective_date").order("created_at").order("id").range(a, b)),
     supabase
       .from("price_alerts")
       .select("id, pct_change, previous_unit_cost, new_unit_cost, acknowledged, created_at, ingredients(name, base_unit), menu_item_margin_impacts(id)")
@@ -68,7 +70,11 @@ export async function getOverview(supabase: Client, orgId: string, v: Vocab = vo
   const laborOverheadOf = (recipe: Parameters<typeof laborOverheadFor>[0] | undefined): LaborOverhead => (recipe ? laborOverheadFor(recipe, org.data) : {});
   const histByIng = new Map<string, { date: string; cost: number }[]>();
   for (const h of history.data ?? []) {
-    histByIng.set(h.ingredient_id, [...(histByIng.get(h.ingredient_id) ?? []), { date: h.effective_date, cost: Number(h.unit_cost) }]);
+    const cost = costInBaseUnit(Number(h.unit_cost), h.unit, ing.get(h.ingredient_id)?.base_unit);
+    if (cost == null) continue;
+    const list = histByIng.get(h.ingredient_id) ?? [];
+    list.push({ date: h.effective_date, cost });
+    histByIng.set(h.ingredient_id, list);
   }
   // An ingredient's cost as of a date: the latest history entry on or
   // before it (entries in effective-date order, ties in the order written).

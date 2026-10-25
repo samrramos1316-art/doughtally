@@ -7,6 +7,8 @@ import { resolveVendorId } from "@/lib/matching/vendors";
 import { insertAndMatchLines } from "@/lib/invoices/lines";
 import { ONBOARDING_FOLDER } from "@/lib/onboarding/upload";
 import { wrongKindMessage } from "@/lib/onboarding/wrongKind";
+import { claimAiRead } from "@/lib/ai/usage";
+import { STALE_READ_MS } from "@/lib/invoices/stale";
 
 const ONBOARDING_IMPORT_URL = "/onboarding/import";
 
@@ -46,6 +48,24 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   // corrections go through the manual-entry grid (§9.2).
   if ((invoice.invoice_line_items[0]?.count ?? 0) > 0) {
     return NextResponse.json({ error: "This invoice has already been read" }, { status: 409 });
+  }
+  // Claim it before the (slow, paid) read, so a double tap or a second tab
+  // can't read it twice and insert every line twice. A read that died
+  // mid-way (left 'processing') can be claimed again after a while.
+  // Two plain conditional updates, not one .or(): PostgREST re-applies an
+  // or= filter to the rows an update returns, which breaks this.
+  const claim = () => supabase.from("invoices").update({ status: "processing", updated_at: new Date().toISOString() }).eq("id", id);
+  let { data: claimed } = await claim().in("status", ["pending", "failed"]).select("id").maybeSingle();
+  if (!claimed) {
+    const staleBefore = new Date(Date.now() - STALE_READ_MS).toISOString();
+    ({ data: claimed } = await claim().eq("status", "processing").lt("updated_at", staleBefore).select("id").maybeSingle());
+  }
+  if (!claimed) return NextResponse.json({ error: "This invoice is already being read" }, { status: 409 });
+
+  const allowed = await claimAiRead(supabase);
+  if (!allowed.ok) {
+    await supabase.from("invoices").update({ status: "pending" }).eq("id", id);
+    return NextResponse.json({ error: allowed.error }, { status: 429 });
   }
 
   const { data: fileBlob, error: downloadErr } = await supabase.storage

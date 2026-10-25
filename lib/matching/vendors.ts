@@ -11,7 +11,8 @@ export async function resolveVendorId(
   orgId: string,
   vendorNameGuess: string | null,
 ): Promise<string | null> {
-  const name = vendorNameGuess?.trim();
+  // vendors.name holds at most 300 characters (migration 033).
+  const name = vendorNameGuess?.trim().slice(0, 300);
   if (!name) return null;
   const normalized = name.toLowerCase();
 

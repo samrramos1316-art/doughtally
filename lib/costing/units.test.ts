@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { canonicalUnit, cleanPackSizes, conversionFactor, isContainerUnit, packSizeFor, sameUnit, toBaseUnitCost } from "./units.ts";
+import { canonicalUnit, cleanPackSizes, conversionFactor, costInBaseUnit, isContainerUnit, packSizeFor, sameUnit, toBaseUnitCost } from "./units.ts";
 
 const close = (a: number | null, b: number) => assert.ok(a != null && Math.abs(a - b) < 1e-9, `${a} ≈ ${b}`);
 const line = (unit_cost: number, unit: string | null, pack_quantity: number | null = null, pack_unit: string | null = null) => ({ unit_cost, unit, pack_quantity, pack_unit });
@@ -116,4 +116,12 @@ test("pack sizes are cleaned on the way in", () => {
   assert.equal(packSizeFor({ bunch: 10 }, "BUNCHES"), 10);
   assert.equal(canonicalUnit("st"), "stem");
   assert.equal(canonicalUnit("bch"), "bunch");
+});
+
+test("costInBaseUnit: history recorded in an older base unit", () => {
+  assert.equal(costInBaseUnit(3.2, "lb", "lb"), 3.2);
+  close(costInBaseUnit(3.2, "lb", "oz"), 0.2); // $3.20/lb is $0.20/oz
+  close(costInBaseUnit(0.2, "oz", "lb"), 3.2);
+  assert.equal(costInBaseUnit(40, "case", "lb"), null); // no fixed size: left out, not compared
+  assert.equal(costInBaseUnit(1.5, null, "lb"), 1.5);
 });

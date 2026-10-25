@@ -2,21 +2,22 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAlertSuggestions } from "@/lib/suggestions/engine";
 import { generateAlertNarrative, NARRATIVE_MODEL } from "@/lib/suggestions/narrative";
+import { claimAiRead } from "@/lib/ai/usage";
 
 // Claude and Voyage calls (Voyage retries 429s on its free tier) can take
 // most of a minute; don't let the platform's default timeout cut them off.
 export const maxDuration = 300;
 
 // §8: the optional Claude narrative — one call per alert, cached on the
-// price_alerts row. Returns the cached one unless ?refresh=1.
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+// price_alerts row; once written it's returned as is (no regenerating on
+// demand, which would be an unmetered Claude call per request).
+export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const refresh = new URL(request.url).searchParams.get("refresh") === "1";
   const supabase = await createClient();
 
   const suggestions = await getAlertSuggestions(supabase, id);
   if (!suggestions) return NextResponse.json({ error: "Alert not found" }, { status: 404 });
-  if (suggestions.alert.ai_narrative && !refresh) {
+  if (suggestions.alert.ai_narrative) {
     return NextResponse.json({
       narrative: suggestions.alert.ai_narrative,
       model: suggestions.alert.ai_narrative_model,
@@ -24,6 +25,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       cached: true,
     });
   }
+
+  const allowed = await claimAiRead(supabase);
+  if (!allowed.ok) return NextResponse.json({ error: allowed.error }, { status: 429 });
 
   let narrative: string;
   try {

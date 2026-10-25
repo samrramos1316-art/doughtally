@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { selectAll } from "@/lib/supabase/selectAll";
 import type { Database } from "@/types/database";
 import { batchCost, effectiveWastePct, laborOverheadOf, marginPctOf } from "./recipeCost";
+import { costInBaseUnit } from "./units";
 
 export type MarginHistoryPoint = {
   date: string;
@@ -34,17 +36,21 @@ export async function getMenuItemMarginHistory(
 
   const { data: recipeIngredients } = await supabase
     .from("recipe_ingredients")
-    .select("ingredient_id, quantity, waste_pct, ingredients(waste_pct)")
+    .select("ingredient_id, quantity, waste_pct, ingredients(waste_pct, base_unit)")
     .eq("recipe_id", menuItem.recipe_id);
   if (!recipeIngredients || recipeIngredients.length === 0) return [];
 
   const ingredientIds = recipeIngredients.map((ri) => ri.ingredient_id);
 
-  const { data: priceHistory } = await supabase
-    .from("ingredient_price_history")
-    .select("ingredient_id, unit_cost, effective_date")
-    .in("ingredient_id", ingredientIds)
-    .order("effective_date", { ascending: true });
+  const { data: priceHistory } = await selectAll((a, b) =>
+    supabase
+      .from("ingredient_price_history")
+      .select("ingredient_id, unit_cost, unit, effective_date")
+      .in("ingredient_id", ingredientIds)
+      .order("effective_date", { ascending: true })
+      .order("id")
+      .range(a, b),
+  );
   if (!priceHistory || priceHistory.length === 0) return [];
 
   const changeDates = [...new Set(priceHistory.map((p) => p.effective_date))].sort();
@@ -60,10 +66,11 @@ export async function getMenuItemMarginHistory(
     // An ingredient with no price yet on this date is left out, as before.
     const lines = recipeIngredients.flatMap((ri) => {
       const pricesOnOrBefore = priceHistory.filter(
-        (p) => p.ingredient_id === ri.ingredient_id && p.effective_date <= date,
+        (p) => p.ingredient_id === ri.ingredient_id && p.effective_date <= date && costInBaseUnit(Number(p.unit_cost), p.unit, ri.ingredients?.base_unit) != null,
       );
       const latest = pricesOnOrBefore[pricesOnOrBefore.length - 1];
-      return latest ? [{ quantity: Number(ri.quantity), unitCost: Number(latest.unit_cost), wastePct: effectiveWastePct(ri.waste_pct, ri.ingredients?.waste_pct) }] : [];
+      const unitCost = latest ? costInBaseUnit(Number(latest.unit_cost), latest.unit, ri.ingredients?.base_unit) : null;
+      return unitCost != null ? [{ quantity: Number(ri.quantity), unitCost, wastePct: effectiveWastePct(ri.waste_pct, ri.ingredients?.waste_pct) }] : [];
     });
 
     const costPerServing = (batchCost(lines, laborOverhead)?.total ?? 0) / servingsPerBatch;

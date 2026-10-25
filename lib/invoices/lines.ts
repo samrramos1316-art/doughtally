@@ -45,6 +45,16 @@ export async function insertAndMatchLines(
     matches = lines.map(() => null);
   }
 
+  // Lines added to an invoice that already has some go after them.
+  const { data: last } = await supabase
+    .from("invoice_line_items")
+    .select("position")
+    .eq("invoice_id", invoiceId)
+    .order("position", { ascending: false, nullsFirst: false })
+    .limit(1)
+    .maybeSingle();
+  const start = last?.position != null ? last.position + 1 : 0;
+
   const rows = lines.map((item, i) => {
     const match = matches[i];
     return {
@@ -59,7 +69,7 @@ export async function insertAndMatchLines(
       parsed_pack_quantity: item.pack_quantity,
       parsed_pack_unit: item.pack_unit,
       entry_method: entryMethod,
-      position: i,
+      position: start + i,
       embedding: match?.embedding ?? null,
       match_status: match?.match_status ?? ("pending" as const),
       matched_ingredient_id: match?.matched_ingredient_id ?? null,
