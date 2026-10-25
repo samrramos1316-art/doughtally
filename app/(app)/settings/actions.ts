@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentOrgId } from "@/lib/supabase/org";
 import { isIndustryEnabled } from "@/lib/industries/gate";
 import { INDUSTRY_IDS } from "@/lib/industries";
 import { marginFromMarkup } from "@/lib/costing/markup";
+import { deleteAccount } from "@/lib/account/deleteAccount";
 
 export type SettingsState = { ok: true } | { error: string } | null;
 
@@ -62,4 +64,32 @@ export async function saveSettingsAction(_prev: SettingsState, formData: FormDat
   if (error) return { error: error.message };
   revalidatePath("/", "layout");
   return { ok: true };
+}
+
+export type DeleteAccountState = { error: string } | null;
+
+// Settings → Delete account. The password is asked again so an open laptop
+// isn't enough to wipe a business.
+export async function deleteAccountAction(_prev: DeleteAccountState, formData: FormData): Promise<DeleteAccountState> {
+  const password = String(formData.get("password") ?? "");
+  if (!password) return { error: "Enter your password to delete your account." };
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const orgId = await getCurrentOrgId(supabase);
+  if (!user?.email || !orgId) return { error: "You're not signed in." };
+
+  const { error: authErr } = await supabase.auth.signInWithPassword({ email: user.email, password });
+  if (authErr) return { error: "That password doesn't match this account." };
+
+  try {
+    const result = await deleteAccount(user.id, orgId);
+    if ("error" in result && result.error) return { error: result.error };
+  } catch (err) {
+    console.error("deleteAccount", err);
+    return { error: "Something went wrong deleting your account. Try again, or email us." };
+  }
+  await supabase.auth.signOut();
+  redirect("/?account=deleted");
 }

@@ -4,6 +4,7 @@ import { getCurrentOrgId } from "@/lib/supabase/org";
 import { getSessionUser } from "@/lib/supabase/user";
 import { PageHeader, Panel } from "@/components/ui/dash";
 import { SettingsForm } from "@/components/settings/SettingsForm";
+import { DeleteAccount } from "@/components/settings/DeleteAccount";
 import { industryOptions } from "@/lib/industries/gate";
 import { normalizeIndustryId } from "@/lib/industries";
 import { getIndustry } from "@/lib/supabase/vocab";
@@ -45,6 +46,7 @@ export default async function SettingsPage() {
               <dd className="text-stone-800">{user?.email}</dd>
             </div>
           </dl>
+          <DeleteAccount />
         </Panel>
       </div>
     </>

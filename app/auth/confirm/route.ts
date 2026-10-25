@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { ONBOARDING_URL } from "@/lib/onboarding/paths";
 import { createClient } from "@/lib/supabase/server";
+import type { LoginErrorCode } from "@/lib/auth/loginErrors";
 
 // Where the signup confirmation email lands. Supabase sends either a PKCE
 // `code` (its default link, via /auth/v1/verify) or a `token_hash` + `type`
@@ -15,21 +16,21 @@ export async function GET(request: NextRequest) {
   const type = url.searchParams.get("type") as EmailOtpType | null;
   const supabase = await createClient();
 
-  let message: string | null = null;
+  let message: LoginErrorCode | null = null;
   if (url.searchParams.get("error_description")) {
     // Supabase itself rejected the link (typically expired or already used).
-    message = "That confirmation link has expired or was already used. Log in, or send yourself a new one.";
+    message = "expired";
   } else if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     // A `code` only exists after Supabase has verified the email, so a failed
     // exchange — most often the link opened in a different browser or device
     // than the one that signed up — still means the account is confirmed.
-    if (error) message = "Your email address is confirmed. Log in to continue.";
+    if (error) message = "confirmed";
   } else if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
-    if (error) message = "That confirmation link has expired or was already used. Log in, or send yourself a new one.";
+    if (error) message = "expired";
   } else {
-    message = "That confirmation link is incomplete. Log in, or send yourself a new one.";
+    message = "incomplete";
   }
 
   if (message) {
