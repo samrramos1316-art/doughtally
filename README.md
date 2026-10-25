@@ -51,8 +51,8 @@ Requirements: Node.js 20+, and a Supabase project (or the
 [Supabase CLI](https://supabase.com/docs/guides/cli) for a local one).
 
 ```bash
-git clone https://github.com/samrramos1316-art/doughline.git
-cd doughline
+git clone https://github.com/samrramos1316-art/doughtally.git
+cd doughtally
 npm install
 cp .env.example .env.local   # then fill in your keys
 ```
