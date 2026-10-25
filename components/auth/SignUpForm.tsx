@@ -13,6 +13,7 @@ import type { IndustryOption } from "@/lib/industries/gate";
 export function SignUpForm({ industries, defaultIndustry = "" }: { industries: IndustryOption[]; defaultIndustry?: string }) {
   const [state, action, pending] = useActionState<AuthActionState, FormData>(signUpAction, null);
   const [picked, setPicked] = useState(defaultIndustry);
+  const typed = state && "error" in state ? state.values : undefined;
   const choices = [...industries.map((i) => ({ id: i.id as string, name: i.name, description: i.description, beta: i.beta })), { id: "", name: "Something else", description: "Any other business. Uses the food wording; change it any time in Settings.", beta: false }];
 
   return (
@@ -29,7 +30,8 @@ export function SignUpForm({ industries, defaultIndustry = "" }: { industries: I
                 picked === c.id ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-white text-stone-900 hover:border-stone-500"
               }`}
             >
-              <input type="radio" name="businessType" value={c.id} checked={picked === c.id} onChange={() => setPicked(c.id)} className="sr-only" />
+              {/* Uncontrolled, so the reset after a failed submit restores the pick (a controlled radio is cleared). */}
+              <input type="radio" name="businessType" value={c.id} defaultChecked={(typed?.businessType ?? defaultIndustry) === c.id} onChange={() => setPicked(c.id)} className="sr-only" />
               <span className="flex items-center gap-2 text-sm font-semibold">
                 {c.name}
                 {c.beta && (
@@ -41,12 +43,12 @@ export function SignUpForm({ industries, defaultIndustry = "" }: { industries: I
           ))}
         </div>
       </fieldset>
-      <Field id="businessName" label="Business name" required autoComplete="organization" placeholder="Maple Street Studio" />
-      <Field id="fullName" label="Your name" autoComplete="name" placeholder="Optional" />
-      <Field id="email" label="Email" type="email" required autoComplete="email" placeholder="you@yourbusiness.com" />
+      <Field id="businessName" label="Business name" required autoComplete="organization" placeholder="Maple Street Studio" defaultValue={typed?.businessName} />
+      <Field id="fullName" label="Your name" autoComplete="name" placeholder="Optional" defaultValue={typed?.fullName} />
+      <Field id="email" label="Email" type="email" required autoComplete="email" placeholder="you@yourbusiness.com" defaultValue={typed?.email} />
       <PasswordField autoComplete="new-password" required minLength={8} hint="At least 8 characters." />
       <label htmlFor="acceptTerms" className="flex items-start gap-2.5 text-sm leading-snug text-stone-700">
-        <input id="acceptTerms" name="acceptTerms" type="checkbox" value="yes" required className="mt-0.5 h-4 w-4 shrink-0 accent-stone-900" />
+        <input id="acceptTerms" name="acceptTerms" type="checkbox" value="yes" required defaultChecked={typed?.acceptTerms === "yes"} className="mt-0.5 h-4 w-4 shrink-0 accent-stone-900" />
         <span>
           I agree to the{" "}
           <Link href="/terms" target="_blank" className="font-medium text-stone-900 underline">

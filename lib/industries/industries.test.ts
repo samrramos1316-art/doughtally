@@ -136,6 +136,7 @@ test("snapshot: a food org's labels are exactly today's", () => {
     ingredient: "Ingredient",
     ingredients: "Ingredients",
     yield: "Batch makes",
+    batch: "batch",
     serving: "serving",
     servings: "servings",
     onMenu: "on the menu",

@@ -114,6 +114,21 @@ async function postJson(url: string, body: unknown, method = "POST") {
   return json;
 }
 
+// Reading a file is safe to repeat, and a 5xx there is usually the reader
+// timing out or overloaded: try once more before showing the owner an error.
+async function readJson(url: string, body: unknown) {
+  try {
+    return await postJson(url, body);
+  } catch (err) {
+    if (!(err instanceof ApiError) || err.status < 500) throw err;
+    await new Promise((r) => setTimeout(r, 2000));
+    return postJson(url, body).catch((again) => {
+      if (again instanceof ApiError && again.status >= 500 && !again.body.error) throw new Error("We couldn't read this file just now. Try it again in a minute.");
+      throw again;
+    });
+  }
+}
+
 // The reader said this upload is something else (import-menu / import-recipe 422).
 const wrongKind = (err: unknown) => (err instanceof ApiError && err.body.wrong_kind ? (err.body.document_type as "invoice" | "menu" | "recipe" | "other") : null);
 // "a menu" / "a recipe" in the industry's words (lib/industries).
@@ -176,14 +191,14 @@ export function OnboardingImport({
   }
 
   async function readMenu(path: string): Promise<MenuDraft[]> {
-    const { items } = await postJson("/api/onboarding/import-menu", { file_storage_path: path });
+    const { items } = await readJson("/api/onboarding/import-menu", { file_storage_path: path });
     return (items as { name_guess: string; price_guess: number | null }[]).map((it) => ({
       key: newKey(), include: true, name: it.name_guess, price: it.price_guess == null ? "" : String(it.price_guess), recipe: "", servings: "", note: "",
     }));
   }
 
   async function readRecipe(path: string, source: string): Promise<RecipeDraft> {
-    const { recipe, lines } = await postJson("/api/onboarding/import-recipe", { file_storage_path: path });
+    const { recipe, lines } = await readJson("/api/onboarding/import-recipe", { file_storage_path: path });
     const draftLines: LineDraft[] = (lines as ApiLine[]).map((l) => {
       const matched = l.matched_ingredient_id && ingById.has(l.matched_ingredient_id) ? l.matched_ingredient_id : "";
       const fresh = l.new_ingredient
@@ -355,7 +370,7 @@ export function OnboardingImport({
     return null;
   };
   const recipeError = (d: RecipeDraft) =>
-    !d.include ? null : !d.name.trim() ? `Name the ${lower(v.recipe)}` : !(num(d.yieldQty) > 0) ? "How many does a batch make?" : d.lines.some(lineError) ? "Finish the highlighted lines" : null;
+    !d.include ? null : !d.name.trim() ? `Name the ${lower(v.recipe)}` : !(num(d.yieldQty) > 0) ? `How many does ${withArticle(v.batch)} make?` : d.lines.some(lineError) ? "Finish the highlighted lines" : null;
   const rowError = (m: MenuDraft) =>
     !m.include ? null : !m.name.trim() ? "Name" : !(num(m.price) >= 0) ? "Price" : m.servings.trim() !== "" && !(num(m.servings) > 0) ? "Servings" : null;
   const included = drafts.filter((d) => d.include);
@@ -565,7 +580,7 @@ export function OnboardingImport({
                           <th className={`${th} w-8`} />
                           <th className={th}>As written</th>
                           <th className={th}>{v.ingredient}</th>
-                          <th className={`${th} w-28 text-right`}>Qty per batch</th>
+                          <th className={`${th} w-28 text-right`}>Qty per {v.batch}</th>
                           <th className={`${th} w-28`}>Unit</th>
                         </tr>
                       </thead>
@@ -694,7 +709,7 @@ export function OnboardingImport({
                           </td>
                           <td className="px-2 py-1.5">
                             <input
-                              aria-label={`${cap(v.servings)} per batch for ${m.name}`}
+                              aria-label={`${cap(v.servings)} per ${v.batch} for ${m.name}`}
                               inputMode="decimal"
                               disabled={!m.recipe}
                               className={`${cell} text-right tabular-nums disabled:bg-stone-50 ${err === "Servings" ? "border-red-400 bg-red-50" : ""}`}

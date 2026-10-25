@@ -72,7 +72,7 @@ export default async function MarginsPage({ searchParams }: { searchParams: Prom
       ) : (
         <div className="flex flex-col gap-3">
           <p className="text-sm text-stone-600">
-            Worst margin first. Open an item to see the working: each {lower(v.ingredient)}&apos;s amount in the batch, divided by the {v.servings} a batch makes, times what you pay for it — added up to the cost of one, then taken off the selling price.
+            Worst margin first. Open an item to see the working: each {lower(v.ingredient)}&apos;s amount in the {v.batch}, divided by the {v.servings} {withArticle(v.batch)} makes, times what you pay for it — added up to the cost of one, then taken off the selling price.
           </p>
           {sorted.map((m) => (
             <ItemCard key={m.id} m={m} target={target} targetText={targetText} byMarkup={byMarkup} w={w} />
@@ -91,7 +91,7 @@ function ItemCard({ m, target, targetText, byMarkup, w: { v } }: { m: ItemMargin
       <summary className="grid cursor-pointer list-none grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 px-4 py-3 md:grid-cols-[minmax(0,1.6fr)_repeat(4,minmax(0,0.55fr))_auto_auto]">
         <span className="min-w-0">
           <span className="block truncate font-semibold text-stone-900">{m.name}</span>
-          <span className="block truncate text-xs text-stone-500">{m.recipe ? `${m.recipe}${m.servings ? ` · ${qtyFmt(m.servings)} per batch` : ""}` : `no ${lower(v.recipe)} linked`}</span>
+          <span className="block truncate text-xs text-stone-500">{m.recipe ? `${m.recipe}${m.servings ? ` · ${qtyFmt(m.servings)} per ${v.batch}` : ""}` : `no ${lower(v.recipe)} linked`}</span>
           <span className="mt-0.5 block text-xs tabular-nums text-stone-700 md:hidden">
             {m.cost == null ? `Sells for ${money(m.price)} · not costed yet` : <>{money(m.price)} − {cents(m.cost)} = {cents(m.profit)} · <b>{pct(m.marginPct)}</b>{byMarkup ? ` · ${formatMarkup(markupOf(m.price, m.cost))} markup` : ""}</>}
           </span>
@@ -123,7 +123,7 @@ function ItemCard({ m, target, targetText, byMarkup, w: { v } }: { m: ItemMargin
           </Empty>
         ) : !m.servings ? (
           <Empty>
-            {m.recipe} doesn&apos;t say how many a batch makes. Set it on the <Link href={`/recipes/${m.recipeId}`} className="font-medium text-ember-700 underline">{lower(v.recipe)}</Link> or with {v.menu} → Edit.
+            {m.recipe} doesn&apos;t say how many {withArticle(v.batch)} makes. Set it on the <Link href={`/recipes/${m.recipeId}`} className="font-medium text-ember-700 underline">{lower(v.recipe)}</Link> or with {v.menu} → Edit.
           </Empty>
         ) : (
           <div className="overflow-x-auto">
@@ -131,7 +131,7 @@ function ItemCard({ m, target, targetText, byMarkup, w: { v } }: { m: ItemMargin
               <thead>
                 <tr>
                   <th className={`${head} text-left`}>{v.ingredient}</th>
-                  <th className={`${head} text-right`}>In the batch</th>
+                  <th className={`${head} text-right`}>In the {v.batch}</th>
                   <th className={`${head} text-right`}>÷ {qtyFmt(m.servings)} {m.servingsFromMenu ? v.servings : (m.yieldUnit ?? v.servings)}</th>
                   <th className={`${head} text-right`}>× price</th>
                   <th className={`${head} text-right`}>= cost of one</th>

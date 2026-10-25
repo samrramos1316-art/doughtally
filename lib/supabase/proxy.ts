@@ -79,7 +79,7 @@ export async function updateSession(request: NextRequest) {
     await supabase.auth.signOut();
     const out = isApi
       ? NextResponse.json({ error: CLOSED_MESSAGE }, { status: 403 })
-      : NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(CLOSED_MESSAGE)}`, request.url));
+      : NextResponse.redirect(new URL("/login?error=closed", request.url));
     // Carry the cleared session cookies over to the new response.
     for (const c of response.cookies.getAll()) out.cookies.set(c);
     return out;

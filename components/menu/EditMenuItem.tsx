@@ -78,7 +78,7 @@ export function EditMenuItem({ item, recipeOptions }: { item: Item; recipeOption
             </select>
           </label>
           <label className="flex flex-col gap-1">
-            <span className={label}>{cap(v.servings)} per batch</span>
+            <span className={label}>{cap(v.servings)} per {v.batch}</span>
             <input
               name="servings"
               type="number"
@@ -90,7 +90,7 @@ export function EditMenuItem({ item, recipeOptions }: { item: Item; recipeOption
               disabled={!recipeId}
             />
             <span className="text-xs text-stone-500">
-              Leave blank when one batch makes {recipe?.yieldQty != null ? `${recipe.yieldQty} ${recipe.yieldUnit ?? ""}`.trim() : `the ${lower(v.recipe)}'s yield`} of these. Set it when it differs{v.servings === "servings" ? " — a cake cut into 12 slices is 12" : ""}.
+              Leave blank when one {v.batch} makes {recipe?.yieldQty != null ? `${recipe.yieldQty} ${recipe.yieldUnit ?? ""}`.trim() : `the ${lower(v.recipe)}'s yield`} of these. Set it when it differs{v.servings === "servings" ? " — a cake cut into 12 slices is 12" : ""}.
             </span>
           </label>
           <label className="flex items-center gap-2 text-sm text-stone-700">

@@ -98,7 +98,7 @@ const sections: LegalSection[] = [
     title: "Ending",
     body: (
       <>
-        <p>You can stop using DoughTally whenever you like, and ask us to delete your account at {mail}.</p>
+        <p>You can stop using DoughTally whenever you like, and delete your account in Settings, or ask us to at {mail}.</p>
         <p>We may suspend or end your access if you seriously or repeatedly break these terms, or if we have to for legal reasons. If we stop offering the Service altogether, we&apos;ll give you reasonable notice and a chance to export your data.</p>
       </>
     ),

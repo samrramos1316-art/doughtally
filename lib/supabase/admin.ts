@@ -2,10 +2,11 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 
-// Service-role client: bypasses RLS entirely. Two legitimate callers: the
+// Service-role client: bypasses RLS entirely. Three legitimate callers: the
 // commodity-price ingestion job (§7) — commodity_price_series is shared,
 // non-tenant data with no user insert policy — and the owner console's
-// counts (lib/admin/stats.ts), which runs only after isAdmin() passes.
+// counts (lib/admin/stats.ts), which runs only after isAdmin() passes, and
+// account deletion (lib/account/deleteAccount.ts), after the owner's password.
 // `server-only` makes importing this from a Client Component a build error,
 // so the key can't reach a browser bundle.
 export function createAdminClient() {

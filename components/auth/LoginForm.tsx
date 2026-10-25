@@ -10,12 +10,13 @@ export function LoginForm({ initialError }: { initialError?: string }) {
   const [resendState, resend, resending] = useActionState<AuthActionState, FormData>(resendConfirmationAction, null);
   const error = state && "error" in state ? state.error : !state ? initialError : undefined;
   const unconfirmed = state && "error" in state ? state.unconfirmedEmail : undefined;
+  const typed = state && "error" in state ? state.values : undefined;
 
   return (
     <div className="space-y-4">
       <form action={action} className="space-y-4">
         {error && <FormMessage kind="error">{error}</FormMessage>}
-        <Field id="email" label="Email" type="email" autoComplete="email" required placeholder="you@yourbusiness.com" />
+        <Field id="email" label="Email" type="email" autoComplete="email" required placeholder="you@yourbusiness.com" defaultValue={typed?.email} />
         <PasswordField autoComplete="current-password" required />
         <SubmitButton pending={pending} pendingText="Logging in…">
           Log in

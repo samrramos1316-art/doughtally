@@ -22,12 +22,13 @@ export type Vocab = {
   ingredient: string;
   ingredients: string;
   yield: string; // "Batch makes" — what one recipe produces
+  batch: string; // one run of a recipe, mid-sentence: "each batch", "per batch"
   serving: string; // one of what a batch makes, mid-sentence: "cost per serving"
   servings: string;
   onMenu: string; // mid-sentence: "not on the menu yet"
   yieldExample: string; // the new-recipe form's "Of what" placeholder
 };
-export const VOCAB_KEYS = ["recipe", "recipes", "menuItem", "menuItems", "menu", "ingredient", "ingredients", "yield", "serving", "servings", "onMenu", "yieldExample"] as const satisfies readonly (keyof Vocab)[];
+export const VOCAB_KEYS = ["recipe", "recipes", "menuItem", "menuItems", "menu", "ingredient", "ingredients", "yield", "batch", "serving", "servings", "onMenu", "yieldExample"] as const satisfies readonly (keyof Vocab)[];
 
 export type MarketSeries = {
   code: string;
@@ -89,6 +90,7 @@ const FOOD_VOCAB: Vocab = {
   ingredient: "Ingredient",
   ingredients: "Ingredients",
   yield: "Batch makes",
+  batch: "batch",
   serving: "serving",
   servings: "servings",
   onMenu: "on the menu",
@@ -153,6 +155,7 @@ export const INDUSTRIES: Record<IndustryId, IndustryProfile> = {
       ingredient: "Material",
       ingredients: "Materials",
       yield: "Build makes",
+      batch: "build",
       serving: "piece",
       servings: "pieces",
       onMenu: "for sale",
@@ -202,6 +205,7 @@ export const INDUSTRIES: Record<IndustryId, IndustryProfile> = {
       ingredient: "Stem or supply",
       ingredients: "Stems & supplies",
       yield: "Arrangement makes",
+      batch: "batch",
       serving: "arrangement",
       servings: "arrangements",
       onMenu: "for sale",
@@ -244,6 +248,7 @@ export const INDUSTRIES: Record<IndustryId, IndustryProfile> = {
       ingredient: "Material",
       ingredients: "Materials",
       yield: "Job makes",
+      batch: "job",
       serving: "part",
       servings: "parts",
       onMenu: "quoted",

@@ -100,7 +100,7 @@ export default async function AlertDetailPage({ params }: { params: Promise<{ id
         </Panel>
         <div className="xl:col-span-5">
           {suggestions && suggestions.items.length > 0 ? (
-            <SuggestionsPanel suggestions={suggestions} recipeWord={lower(v.recipe)} />
+            <SuggestionsPanel suggestions={suggestions} recipeWord={lower(v.recipe)} batchWord={v.batch} />
           ) : (
             <Panel title="What to do">
               <p className="text-sm text-stone-500">Nothing to change — no {lower(v.menuItem)} lost margin.</p>

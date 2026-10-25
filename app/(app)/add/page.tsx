@@ -26,7 +26,7 @@ const kindsFor = (v: Vocab) => [
   {
     href: "/onboarding/import?kind=recipe",
     title: cap(withArticle(lower(v.recipe))),
-    body: `What goes into a batch. ${v.ingredients} are matched to your price list so each batch is costed.`,
+    body: `What goes into ${withArticle(v.batch)}. ${v.ingredients} are matched to your price list so each ${v.batch} is costed.`,
     cta: `Import ${lower(v.recipes)}`,
     icon: "M5 3h11a3 3 0 0 1 3 3v15H8a3 3 0 0 1-3-3zM5 18a3 3 0 0 1 3-3h11M9 7h6M9 10h4",
   },
