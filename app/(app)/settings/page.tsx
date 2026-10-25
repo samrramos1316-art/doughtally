@@ -46,6 +46,16 @@ export default async function SettingsPage() {
               <dd className="text-stone-800">{user?.email}</dd>
             </div>
           </dl>
+          <div className="mt-4 border-t border-stone-200 pt-3">
+            {/* A file download, not a page: a plain link. */}
+            <a href="/api/account/export" download className="text-sm font-medium text-stone-800 underline">
+              Download my data
+            </a>
+            <p className="mt-1 text-xs text-stone-500">Everything DoughTally holds for this account and business, as one JSON file.</p>
+            <p className="mt-2 text-xs text-stone-500">
+              <a href="/privacy" className="underline">Privacy Policy</a> · <a href="/terms" className="underline">Terms</a> · <a href="/cookies" className="underline">Cookies</a>
+            </p>
+          </div>
           <DeleteAccount />
         </Panel>
       </div>

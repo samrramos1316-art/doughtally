@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ingestMarketData } from "@/lib/market/ingest";
+import { purgeOldOnboardingFiles } from "@/lib/onboarding/purge";
 
 // A year of USDA daily reports plus the FAO CSV takes a few seconds; leave room.
 export const maxDuration = 300;
@@ -18,11 +19,21 @@ export async function GET(request: Request) {
   const days = Number.isFinite(daysParam) && daysParam > 0 ? Math.min(daysParam, 2000) : 400;
 
   const started = Date.now();
+  // Data minimisation, on the same daily run: menu/recipe uploads older than
+  // a day go (lib/onboarding/purge.ts). Its own try, so neither job's
+  // failure stops the other.
+  let purge: { removed: number } | { error: string };
+  try {
+    purge = await purgeOldOnboardingFiles();
+  } catch (err) {
+    console.error("[cron] onboarding file cleanup failed:", err);
+    purge = { error: err instanceof Error ? err.message : String(err) };
+  }
   try {
     const series = await ingestMarketData({ days });
     const failed = series.filter((s) => s.error);
     return NextResponse.json(
-      { ok: failed.length === 0, days, seconds: (Date.now() - started) / 1000, series },
+      { ok: failed.length === 0, days, seconds: (Date.now() - started) / 1000, series, onboarding_cleanup: purge },
       { status: failed.length === series.length ? 502 : 200 },
     );
   } catch (err) {

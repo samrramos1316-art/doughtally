@@ -13,7 +13,8 @@ const head = "px-3 py-2 text-left font-ledger text-[10px] font-normal tracking-[
 // Everything listed here is what the code actually sets: the Supabase sign-in
 // cookies (lib/supabase/server.ts, lib/supabase/proxy.ts; @supabase/ssr's
 // default 400-day max-age), the install-card dismissal in localStorage
-// (components/pwa/InstallPrompt.tsx, 30 days), and the service worker's
+// (components/pwa/InstallPrompt.tsx, 30 days), the password-reset marker
+// (app/(marketing)/auth-actions.ts, 1 hour), and the service worker's
 // cache (public/sw.js), and Vercel Web Analytics (components/analytics/
 // SiteAnalytics.tsx — cookieless, scrubbed URLs). Update this page when any
 // of that changes.
@@ -23,7 +24,7 @@ const sections: LegalSection[] = [
     title: "The short version",
     body: (
       <>
-        <p>DoughTally uses only what it needs to work: a cookie that keeps you signed in, one small note in your browser, and — if you install the app — a cached copy of its files. We also count page visits with a cookie-free analytics tool, so we know which pages people use.</p>
+        <p>DoughTally uses only what it needs to work: cookies that keep you signed in and make the links in our emails work, one small note in your browser, and — if you install the app — a cached copy of its files. We also count page visits with a cookie-free analytics tool, so we know which pages people use.</p>
         <p>There are no advertising cookies, no tracking across other websites and no social-media pixels. Nothing here is used to build a profile of you or sold to anyone.</p>
       </>
     ),
@@ -40,7 +41,7 @@ const sections: LegalSection[] = [
     title: "Cookies we use",
     body: (
       <>
-        <p>Both are <strong>strictly necessary</strong> and <strong>first-party</strong>: set by {SITE} itself, only for signing you in.</p>
+        <p>All of them are <strong>strictly necessary</strong> and <strong>first-party</strong>: set by {SITE} itself, only for signing you in.</p>
         <div className="not-prose overflow-x-auto">
           <table className="w-full min-w-[520px] text-[14px]">
             <thead>
@@ -57,9 +58,14 @@ const sections: LegalSection[] = [
                 <td className={cell}>Until you log out, or up to 400 days</td>
               </tr>
               <tr>
-                <td className={`${cell} font-ledger text-[12px] text-white`}>sb-…-auth-token-code-verifier</td>
-                <td className={cell}>A one-time security check while you follow a link from one of our emails (such as confirming your address), so the link only works in the browser that asked for it.</td>
-                <td className={cell}>Minutes — removed once the link is used</td>
+                <td className={`${cell} font-ledger text-[12px] text-white`}>sb-…-code-verifier (also sb-…-flow-…-code-verifier and sb-…-flows-code-verifier)</td>
+                <td className={cell}>A one-time security check while you follow a link from one of our emails (confirming your address, or resetting your password), so the link only works in the browser that asked for it.</td>
+                <td className={cell}>Removed once the link is used; if it never is, up to 400 days</td>
+              </tr>
+              <tr>
+                <td className={`${cell} font-ledger text-[12px] text-white`}>dt_pw_reset</td>
+                <td className={cell}>Set when you ask for a password reset, so the link from that email takes you to &ldquo;Choose a new password&rdquo; rather than your dashboard. It holds no personal information.</td>
+                <td className={cell}>Removed once the link is used; otherwise 1 hour</td>
               </tr>
             </tbody>
           </table>

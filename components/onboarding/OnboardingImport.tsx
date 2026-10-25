@@ -427,6 +427,10 @@ export function OnboardingImport({
       }
       setSaved({ ingredients: wanted.size, recipes: included.length, menu: includedMenu.length });
       setPhase("done");
+      // Saved, so the photos/PDFs are done with: don't keep them. Best effort;
+      // the daily cleanup (lib/onboarding/purge.ts) catches any left behind.
+      const paths = files.map((f) => f.path).filter((p): p is string => !!p);
+      if (paths.length) void createClient().storage.from("invoices").remove(paths);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Saving failed");
