@@ -123,3 +123,39 @@ $$;
 
 revoke execute on function claim_ai_read(integer) from public, anon;
 grant execute on function claim_ai_read(integer) to authenticated;
+
+-- 4. Names stay a sensible length, whoever writes them. The app's forms
+-- already limit them; signup through Supabase's API directly, or a REST
+-- write, didn't. NOT VALID: checked on new writes only, so an existing
+-- over-long row can't fail this migration.
+alter table organizations add constraint organizations_name_length check (char_length(name) <= 200) not valid;
+alter table profiles add constraint profiles_full_name_length check (char_length(full_name) <= 200) not valid;
+alter table ingredients add constraint ingredients_name_length check (char_length(name) <= 200) not valid;
+alter table recipes add constraint recipes_name_length check (char_length(name) <= 200) not valid;
+alter table menu_items add constraint menu_items_name_length check (char_length(name) <= 200) not valid;
+alter table vendors add constraint vendors_name_length check (char_length(name) <= 300) not valid;
+
+-- Signup (migration 026) with the names trimmed to fit, so an over-long
+-- one shortens rather than failing the whole signup.
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  new_org_id uuid;
+begin
+  insert into organizations (name, business_type)
+  values (
+    left(coalesce(nullif(trim(new.raw_user_meta_data->>'business_name'), ''), 'My Business'), 200),
+    public.normalize_business_type(new.raw_user_meta_data->>'business_type')
+  )
+  returning id into new_org_id;
+
+  insert into profiles (id, org_id, full_name)
+  values (new.id, new_org_id, left(new.raw_user_meta_data->>'full_name', 200));
+
+  return new;
+end;
+$$;

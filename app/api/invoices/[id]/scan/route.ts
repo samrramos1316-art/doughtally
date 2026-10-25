@@ -52,14 +52,14 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   // Claim it before the (slow, paid) read, so a double tap or a second tab
   // can't read it twice and insert every line twice. A read that died
   // mid-way (left 'processing') can be claimed again after a while.
-  const staleBefore = new Date(Date.now() - STALE_READ_MS).toISOString();
-  const { data: claimed } = await supabase
-    .from("invoices")
-    .update({ status: "processing", updated_at: new Date().toISOString() })
-    .eq("id", id)
-    .or(`status.in.(pending,failed),and(status.eq.processing,updated_at.lt.${staleBefore})`)
-    .select("id")
-    .maybeSingle();
+  // Two plain conditional updates, not one .or(): PostgREST re-applies an
+  // or= filter to the rows an update returns, which breaks this.
+  const claim = () => supabase.from("invoices").update({ status: "processing", updated_at: new Date().toISOString() }).eq("id", id);
+  let { data: claimed } = await claim().in("status", ["pending", "failed"]).select("id").maybeSingle();
+  if (!claimed) {
+    const staleBefore = new Date(Date.now() - STALE_READ_MS).toISOString();
+    ({ data: claimed } = await claim().eq("status", "processing").lt("updated_at", staleBefore).select("id").maybeSingle());
+  }
   if (!claimed) return NextResponse.json({ error: "This invoice is already being read" }, { status: 409 });
 
   const allowed = await claimAiRead(supabase);

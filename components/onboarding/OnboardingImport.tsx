@@ -184,6 +184,8 @@ export function OnboardingImport({
     if (f.path) return f.path;
     const file = f.file!;
     const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    // Same cap as the invoice import; the bucket itself refuses over 25 MB (migration 033).
+    if (isPdf && file.size > 20 * 1024 * 1024) throw new Error(`${file.name} is a PDF over 20 MB — split it or save a smaller copy`);
     const path = `${orgId}/onboarding/${newKey()}.${isPdf ? "pdf" : "jpg"}`;
     const { error: upErr } = await createClient().storage.from("invoices").upload(path, isPdf ? file : await compressImage(file), { contentType: isPdf ? "application/pdf" : "image/jpeg" });
     if (upErr) throw new Error(upErr.message);

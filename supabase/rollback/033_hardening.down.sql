@@ -25,3 +25,11 @@ drop trigger if exists menu_item_margin_impacts_same_org_alert on menu_item_marg
 drop trigger if exists menu_item_margin_impacts_same_org_menu_item on menu_item_margin_impacts;
 drop trigger if exists menu_item_margin_impacts_same_org_recipe on menu_item_margin_impacts;
 drop function if exists enforce_same_org();
+
+alter table organizations drop constraint if exists organizations_name_length;
+alter table profiles drop constraint if exists profiles_full_name_length;
+alter table ingredients drop constraint if exists ingredients_name_length;
+alter table recipes drop constraint if exists recipes_name_length;
+alter table menu_items drop constraint if exists menu_items_name_length;
+alter table vendors drop constraint if exists vendors_name_length;
+-- handle_new_user: re-run its definition from migrations/026_industry_profiles.sql.

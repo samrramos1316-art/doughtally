@@ -377,6 +377,30 @@ and smart-links against the live site, their default). Fixes:
 A click-through of every screen for bakery, jewelry, florist and
 fabrication (desktop + phone) found nothing else.
 
+## Security and correctness review (2026-10-25)
+
+A full pass over the routes, server actions, SQL, storage and dependencies,
+then the live site.
+- Migration `032`: users could update any column of their own profile,
+  including `org_id`, which every RLS policy trusts. Shown on a local
+  Postgres + PostgREST: before 032 a user who knew another business's
+  org id could read its data; after, the update is refused.
+- Migration `033`: cross-business references refused by trigger (foreign
+  keys skip RLS); the `invoices` bucket takes photos/PDFs up to 25 MB; a
+  per-business daily cap on AI reads (`claim_ai_read`, `AI_DAILY_LIMIT`,
+  default 150); name length limits; signup trims over-long names.
+- Next.js 16.4.3 and dependency updates (npm audit: 0).
+- Scan claims the invoice first (two requests can't read it twice); lists
+  that grow page past PostgREST's 1000-row cap (shown locally: the old
+  history query stopped 4 years short); history from before a base unit
+  change is converted; CSV export guards formula cells; security headers;
+  login error codes; forms keep what was typed; Settings → Delete account.
+
+Still open:
+- Password reset: needs working email first (see Known issues).
+- The service worker's static cache is never pruned between deploys.
+- Haiku 4.5 still expands typed invoice lines (`lib/ai/itemNames.ts`).
+
 ## Not started yet
 
 - Gemini vision provider (needs `GEMINI_API_KEY`).
