@@ -114,6 +114,21 @@ async function postJson(url: string, body: unknown, method = "POST") {
   return json;
 }
 
+// Reading a file is safe to repeat, and a 5xx there is usually the reader
+// timing out or overloaded: try once more before showing the owner an error.
+async function readJson(url: string, body: unknown) {
+  try {
+    return await postJson(url, body);
+  } catch (err) {
+    if (!(err instanceof ApiError) || err.status < 500) throw err;
+    await new Promise((r) => setTimeout(r, 2000));
+    return postJson(url, body).catch((again) => {
+      if (again instanceof ApiError && again.status >= 500 && !again.body.error) throw new Error("We couldn't read this file just now. Try it again in a minute.");
+      throw again;
+    });
+  }
+}
+
 // The reader said this upload is something else (import-menu / import-recipe 422).
 const wrongKind = (err: unknown) => (err instanceof ApiError && err.body.wrong_kind ? (err.body.document_type as "invoice" | "menu" | "recipe" | "other") : null);
 // "a menu" / "a recipe" in the industry's words (lib/industries).
@@ -176,14 +191,14 @@ export function OnboardingImport({
   }
 
   async function readMenu(path: string): Promise<MenuDraft[]> {
-    const { items } = await postJson("/api/onboarding/import-menu", { file_storage_path: path });
+    const { items } = await readJson("/api/onboarding/import-menu", { file_storage_path: path });
     return (items as { name_guess: string; price_guess: number | null }[]).map((it) => ({
       key: newKey(), include: true, name: it.name_guess, price: it.price_guess == null ? "" : String(it.price_guess), recipe: "", servings: "", note: "",
     }));
   }
 
   async function readRecipe(path: string, source: string): Promise<RecipeDraft> {
-    const { recipe, lines } = await postJson("/api/onboarding/import-recipe", { file_storage_path: path });
+    const { recipe, lines } = await readJson("/api/onboarding/import-recipe", { file_storage_path: path });
     const draftLines: LineDraft[] = (lines as ApiLine[]).map((l) => {
       const matched = l.matched_ingredient_id && ingById.has(l.matched_ingredient_id) ? l.matched_ingredient_id : "";
       const fresh = l.new_ingredient

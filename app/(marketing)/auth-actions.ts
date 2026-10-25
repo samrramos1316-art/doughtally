@@ -10,7 +10,7 @@ import { LEGAL_VERSION } from "@/lib/legal";
 import { isIndustryEnabled } from "@/lib/industries/gate";
 
 export type AuthActionState =
-  | { error: string; unconfirmedEmail?: string }
+  | { error: string; unconfirmedEmail?: string; values?: Record<string, string> }
   | { notice: string }
   | null;
 
@@ -29,7 +29,18 @@ function friendly(message: string) {
   return message;
 }
 
-export async function signUpAction(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+// React resets a form after its action runs, so an error would wipe what was
+// typed. Hand the fields back (never the password) for the form to refill.
+function keepTyped(formData: FormData, keys: string[]) {
+  return Object.fromEntries(keys.map((k) => [k, String(formData.get(k) ?? "")]));
+}
+
+export async function signUpAction(prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  const result = await signUp(prevState, formData);
+  return result && "error" in result ? { ...result, values: keepTyped(formData, ["businessType", "businessName", "fullName", "email", "acceptTerms"]) } : result;
+}
+
+async function signUp(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const parsed = signUpSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -83,7 +94,12 @@ export async function signUpAction(_prevState: AuthActionState, formData: FormDa
   redirect(ONBOARDING_URL);
 }
 
-export async function logInAction(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+export async function logInAction(prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  const result = await logIn(prevState, formData);
+  return result && "error" in result ? { ...result, values: keepTyped(formData, ["email"]) } : result;
+}
+
+async function logIn(_prevState: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
