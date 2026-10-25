@@ -1,4 +1,4 @@
-# Fatass — Technical Architecture & Implementation Plan
+# DoughTally — Technical Architecture & Implementation Plan
 
 **Product:** Lean AI-powered back-office micro-SaaS for micro-food businesses (home bakeries, food trucks, small caterers) — protects margins by automating wholesale invoice processing and real-time cost/margin tracking.
 
