@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { MAX_AMOUNT } from "@/lib/validators/ingredient";
 import type { Database } from "@/types/database";
 import { embedTexts, ingredientEmbeddingText, toPgVector } from "@/lib/ai/embeddings/voyage";
 import { cleanPackSizes, sameUnit, type PackSizes } from "@/lib/costing/units";
@@ -57,13 +58,18 @@ export async function bulkUpsertIngredients(
   const seen = new Map<string, number>();
   const rows = input.map((r, i) => {
     const row = r.row ?? i + 1;
-    const name = (r.name ?? "").trim();
-    const base_unit = (r.base_unit ?? "").trim();
+    // JSON rows come from the client: read every field as text, whatever was sent.
+    const text = (v: unknown) => (v == null ? "" : String(v)).trim();
+    const name = text(r.name);
+    const base_unit = text(r.base_unit);
     const costText = r.current_unit_cost == null ? "" : String(r.current_unit_cost).trim().replace(/^\$/, "");
     const cost = costText === "" ? null : Number(costText);
     if (!name) errors.push({ row, field: "name", message: "Name is required" });
+    else if (name.length > 200) errors.push({ row, field: "name", message: "Name can be at most 200 characters" });
     if (!base_unit) errors.push({ row, field: "base_unit", message: "Base unit is required" });
-    if (cost != null && (!Number.isFinite(cost) || cost < 0)) {
+    else if (base_unit.length > 30) errors.push({ row, field: "base_unit", message: "Base unit can be at most 30 characters" });
+    if (text(r.category).length > 60) errors.push({ row, field: "category", message: "Category can be at most 60 characters" });
+    if (cost != null && (!Number.isFinite(cost) || cost < 0 || cost > MAX_AMOUNT)) {
       errors.push({ row, field: "current_unit_cost", message: `"${costText}" isn't a cost` });
     }
     const wasteText = r.waste_pct == null ? "" : String(r.waste_pct).trim().replace(/%$/, "");
@@ -89,7 +95,7 @@ export async function bulkUpsertIngredients(
     if (unitPer != null && !(Number.isFinite(unitPer) && unitPer > 0)) {
       errors.push({ row, field: "new_unit_per_old", message: `"${perText}" isn't a unit size` });
     }
-    const id = r.id?.trim() || null;
+    const id = text(r.id) || null;
     if (id && !byId.has(id)) errors.push({ row, field: "id", message: `No ingredient with id ${id} in this account` });
     const target = id ? byId.get(id) : byName.get(norm(name));
     return {
@@ -101,8 +107,8 @@ export async function bulkUpsertIngredients(
       waste,
       packs,
       unitPer,
-      category: r.category?.trim() || null,
-      commodity_code: r.commodity_code?.trim() || null,
+      category: text(r.category) || null,
+      commodity_code: text(r.commodity_code).slice(0, 60) || null,
     };
   });
   if (errors.length) return { errors };

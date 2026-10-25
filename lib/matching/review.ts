@@ -59,10 +59,16 @@ export async function confirmLineItem(
 ) {
   const { data: line, error: lineErr } = await supabase
     .from("invoice_line_items")
-    .select("id, org_id, invoice_id, raw_text, candidate_matches, invoices(vendor_id)")
+    .select("id, org_id, invoice_id, raw_text, candidate_matches, matched_ingredient_id, price_applied_at, invoices(vendor_id)")
     .eq("id", lineItemId)
     .single();
   if (lineErr || !line) return { error: "Line item not found", status: 404 as const };
+  // Once a line's price is in an ingredient's costs, it stays that
+  // ingredient's: re-pointing it (a second tab, a stale screen) would leave
+  // the price recorded against one ingredient and the line naming another.
+  if (line.price_applied_at && line.matched_ingredient_id !== ingredientId) {
+    return { error: "This line is already matched and its price applied to another ingredient", status: 409 as const };
+  }
 
   const { data: ingredient } = await supabase.from("ingredients").select("id").eq("id", ingredientId).maybeSingle();
   if (!ingredient) return { error: "Ingredient not found", status: 404 as const };

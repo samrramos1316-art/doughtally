@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { selectAll } from "@/lib/supabase/selectAll";
 import { createClient } from "@/lib/supabase/server";
 import { getIndustry } from "@/lib/supabase/vocab";
 import { lower } from "@/lib/vocab";
@@ -27,7 +28,7 @@ export default async function SeasonsPage() {
   const since = `${year - 2}-01-01`;
   const [{ data: materials }, { data: history }] = await Promise.all([
     supabase.from("ingredients").select("id, name, base_unit").order("name"),
-    supabase.from("ingredient_price_history").select("ingredient_id, unit_cost, unit, effective_date").gte("effective_date", since),
+    selectAll((a, b) => supabase.from("ingredient_price_history").select("ingredient_id, unit_cost, unit, effective_date").gte("effective_date", since).order("id").range(a, b)),
   ]);
   const pricesOf = new Map<string, DatedPrice[]>();
   for (const h of history ?? []) pricesOf.set(h.ingredient_id, [...(pricesOf.get(h.ingredient_id) ?? []), h]);

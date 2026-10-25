@@ -6,6 +6,7 @@ import { getIndustry } from "@/lib/supabase/vocab";
 import { extractionHints } from "@/lib/industries/extraction";
 import { readOnboardingUpload } from "@/lib/onboarding/upload";
 import { wrongKindBody } from "@/lib/onboarding/wrongKind";
+import { claimAiRead } from "@/lib/ai/usage";
 
 export const maxDuration = 300;
 
@@ -20,12 +21,16 @@ export async function POST(request: Request) {
   const file = await readOnboardingUpload(supabase, orgId, await request.json().catch(() => null));
   if ("error" in file) return NextResponse.json({ error: file.error }, { status: file.status });
 
+  const allowed = await claimAiRead(supabase);
+  if (!allowed.ok) return NextResponse.json({ error: allowed.error }, { status: 429 });
+
   try {
     const { document_type, items } = await getVisionProvider().extractMenu(file.buffer, file.mimeType, { hints: extractionHints((await getIndustry()).id, "menu") });
     // Not a menu (a recipe, an invoice…): say what it is so the screen can route it.
     if (document_type !== "menu") return NextResponse.json(wrongKindBody("menu", document_type, file.path, (await getIndustry()).vocab), { status: 422 });
     return NextResponse.json({ items: items.filter((i) => i.name_guess.trim()) });
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Couldn't read this menu" }, { status: 502 });
+    console.error("[onboarding] reading a menu failed:", err);
+    return NextResponse.json({ error: "We couldn't read this file just now. Try it again in a minute." }, { status: 502 });
   }
 }

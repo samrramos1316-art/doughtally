@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const parsed = createInvoiceSchema.safeParse(await request.json());
+  const parsed = createInvoiceSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 });
   }

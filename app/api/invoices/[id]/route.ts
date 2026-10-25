@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { updateInvoiceSchema } from "@/lib/validators/invoice";
 import { resolveVendorId } from "@/lib/matching/vendors";
+import { STALE_READ_MS } from "@/lib/invoices/stale";
 
 // §9.2: the header fields an owner fills in when a scan couldn't read them.
 // The vendor matters beyond display — it keys vendor_ingredient_aliases, so
@@ -10,7 +11,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { id } = await params;
   const supabase = await createClient();
 
-  const parsed = updateInvoiceSchema.safeParse(await request.json());
+  const parsed = updateInvoiceSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 });
   }
@@ -40,9 +41,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: invoice } = await supabase.from("invoices").select("id, status, file_storage_path, invoice_line_items(count)").eq("id", id).maybeSingle();
+  const { data: invoice } = await supabase.from("invoices").select("id, status, updated_at, file_storage_path, invoice_line_items(count)").eq("id", id).maybeSingle();
   if (!invoice) return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
-  if (invoice.status === "pending" || invoice.status === "processing") {
+  // A read still running — but one that died (stuck past STALE_READ_MS) can go.
+  const reading = (invoice.status === "pending" || invoice.status === "processing") && Date.now() - Date.parse(invoice.updated_at) < STALE_READ_MS;
+  if (reading) {
     return NextResponse.json({ error: "It's still being read — try again in a minute" }, { status: 409 });
   }
   if ((invoice.invoice_line_items[0]?.count ?? 0) > 0) {

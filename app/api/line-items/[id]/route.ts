@@ -23,7 +23,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { id } = await params;
   const supabase = await createClient();
 
-  const parsed = updateLineItemSchema.safeParse(await request.json());
+  const parsed = updateLineItemSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
     return NextResponse.json({ error: issue ? `${issue.path.join(".")}: ${issue.message}` : "Invalid input" }, { status: 400 });

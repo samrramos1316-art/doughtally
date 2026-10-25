@@ -111,6 +111,16 @@ export function conversionFactor(from: string | null | undefined, to: string | n
   return ff / tf;
 }
 
+// A recorded price in the material's base unit as it is now. History keeps
+// the unit each price was recorded in, and a base unit can change later
+// (lb → oz): convert when the units convert on their own, else null (leave
+// it out rather than compare $/lb with $/oz).
+export function costInBaseUnit(cost: number, unit: string | null | undefined, baseUnit: string | null | undefined): number | null {
+  if (!unit || !baseUnit || sameUnit(unit, baseUnit)) return cost;
+  const f = conversionFactor(unit, baseUnit);
+  return f ? cost / f : null;
+}
+
 // ingredients.pack_sizes (migration 028): how many of the material's base
 // unit come in one bunch, box, … — keyed by the unit as invoices name it.
 export type PackSizes = Record<string, number>;

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { selectAll } from "@/lib/supabase/selectAll";
 import { createClient } from "@/lib/supabase/server";
 import { UNRESOLVED_STATUSES } from "@/lib/matching/review";
 import { isoDaysAgo } from "@/lib/dates/localDate";
@@ -15,11 +16,15 @@ const TABS = [
 export default async function InvoicesPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const { tab = "all" } = await searchParams;
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("invoices")
-    .select("id, status, invoice_number, invoice_date, total_amount, created_at, source_type, vendors(name), invoice_line_items(match_status, parsed_line_total)")
-    .order("invoice_date", { ascending: false, nullsFirst: true })
-    .order("created_at", { ascending: false });
+  const { data } = await selectAll((a, b) =>
+    supabase
+      .from("invoices")
+      .select("id, status, invoice_number, invoice_date, total_amount, created_at, source_type, vendors(name), invoice_line_items(match_status, parsed_line_total)")
+      .order("invoice_date", { ascending: false, nullsFirst: true })
+      .order("created_at", { ascending: false })
+      .order("id")
+      .range(a, b),
+  );
   const invoices = data ?? [];
   const current = TABS.find((t) => t.key === tab) ?? TABS[0];
   const shown = invoices.filter((i) => current.match(i.status));

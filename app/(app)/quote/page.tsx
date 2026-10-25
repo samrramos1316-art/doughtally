@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { selectAll } from "@/lib/supabase/selectAll";
 import { createClient } from "@/lib/supabase/server";
 import { getIndustry } from "@/lib/supabase/vocab";
 import { lower } from "@/lib/vocab";
@@ -41,7 +42,7 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
           .maybeSingle()
       : Promise.resolve({ data: null }),
     // For the price basis switch: what each material cost over six months.
-    supabase.from("ingredient_price_history").select("ingredient_id, unit_cost, unit, effective_date").gte("effective_date", since),
+    selectAll((a, b) => supabase.from("ingredient_price_history").select("ingredient_id, unit_cost, unit, effective_date").gte("effective_date", since).order("id").range(a, b)),
   ]);
   const pricesOf = new Map<string, PricePoint[]>();
   for (const h of history ?? []) pricesOf.set(h.ingredient_id, [...(pricesOf.get(h.ingredient_id) ?? []), h]);

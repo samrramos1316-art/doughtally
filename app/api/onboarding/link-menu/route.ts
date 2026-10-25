@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentOrgId } from "@/lib/supabase/org";
 import { linkMenuToRecipes } from "@/lib/onboarding/reason";
+import { claimAiRead } from "@/lib/ai/usage";
 
 export const maxDuration = 120;
 
@@ -33,6 +34,9 @@ export async function POST(request: Request) {
 
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 });
+
+  const allowed = await claimAiRead(supabase);
+  if (!allowed.ok) return NextResponse.json({ error: allowed.error }, { status: 429 });
 
   try {
     const links = await linkMenuToRecipes(parsed.data);

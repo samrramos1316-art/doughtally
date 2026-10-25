@@ -6,6 +6,7 @@ import { getIndustry } from "@/lib/supabase/vocab";
 import { extractionHints } from "@/lib/industries/extraction";
 import { readOnboardingUpload } from "@/lib/onboarding/upload";
 import { wrongKindBody } from "@/lib/onboarding/wrongKind";
+import { claimAiRead } from "@/lib/ai/usage";
 import { matchLines } from "@/lib/matching/vectorMatch";
 import { SUGGESTION_DISPLAY_THRESHOLD } from "@/lib/matching/thresholds";
 import { canonicalUnit, conversionFactor, isContainerUnit } from "@/lib/costing/units";
@@ -43,11 +44,15 @@ export async function POST(request: Request) {
   const file = await readOnboardingUpload(supabase, orgId, await request.json().catch(() => null));
   if ("error" in file) return NextResponse.json({ error: file.error }, { status: file.status });
 
+  const allowed = await claimAiRead(supabase);
+  if (!allowed.ok) return NextResponse.json({ error: allowed.error }, { status: 429 });
+
   let recipe;
   try {
     recipe = await getVisionProvider().extractRecipe(file.buffer, file.mimeType, { hints: extractionHints((await getIndustry()).id, "recipe") });
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Couldn't read this recipe" }, { status: 502 });
+    console.error("[onboarding] reading a recipe failed:", err);
+    return NextResponse.json({ error: "We couldn't read this file just now. Try it again in a minute." }, { status: 502 });
   }
   // Not a recipe (a menu, an invoice…): say what it is so the screen can route it.
   if (recipe.document_type !== "recipe") return NextResponse.json(wrongKindBody("recipe", recipe.document_type, file.path, (await getIndustry()).vocab), { status: 422 });
