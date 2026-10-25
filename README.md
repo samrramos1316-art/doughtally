@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DoughTally
 
-## Getting Started
+AI-powered cost and margin tracking for small makers: home bakeries, food
+trucks, caterers, florists, jewelers and metal fabricators.
 
-First, run the development server:
+Snap a photo of a supplier invoice and DoughTally reads it, matches each line
+to your ingredients, updates their costs, and shows you right away which
+recipes and menu items lost margin and what to do about it.
+
+Live at **[doughtally.app](https://doughtally.app)**.
+
+## Features
+
+- **Invoice scanning.** Phone photos or PDFs of invoices are turned into
+  structured line items with a vision model (Claude, behind a swappable
+  provider interface).
+- **Smart ingredient matching.** Vector search (Voyage AI embeddings +
+  pgvector) matches messy vendor names like `ORG CHKN BRST 40# CS` to your
+  ingredients. Once you confirm a match it is remembered, and unsure matches
+  go to a swipe-to-verify review queue.
+- **Live costing.** Recipe cost and menu-item margin come from Postgres
+  views, so every scanned invoice updates them instantly, with no cache to
+  go stale.
+- **Price alerts and suggestions.** Each price change works out which items
+  it affected and by how much, and Claude writes a specific recommendation
+  (raise price, change portion, switch vendor…).
+- **Market Watch.** Daily ingestion of USDA, FAO and BLS commodity prices
+  warns you before your costs go up.
+- **Multi-industry.** One schema and cost formula, with per-industry wording,
+  units, categories and defaults (labor, waste, machine time, markup).
+- **Installable PWA** with offline support, plus bulk CSV/PDF import and a
+  manual-entry grid.
+
+## Tech stack
+
+| Layer | Choice |
+|---|---|
+| App | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4 |
+| Data & auth | Supabase Postgres with Row-Level Security for tenant isolation, Supabase Auth and Storage |
+| AI | Anthropic Claude (vision extraction, suggestions), Voyage AI (embeddings) |
+| Validation | Zod |
+| Hosting | Vercel (app + daily cron) |
+
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full design: schema,
+matching pipeline and the price-change cascade. See [`PROGRESS.md`](PROGRESS.md)
+for what was built and how each step was tested.
+
+## Running locally
+
+Requirements: Node.js 20+, and a Supabase project (or the
+[Supabase CLI](https://supabase.com/docs/guides/cli) for a local one).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/samrramos1316-art/doughline.git
+cd doughline
+npm install
+cp .env.example .env.local   # then fill in your keys
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Apply the database migrations in `supabase/migrations/` (in order) to your
+Supabase project, for example with `supabase db push`. Then:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run dev     # http://localhost:3000
+npm test        # unit tests
+npm run lint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`node scripts/seed-demo-data.mjs` seeds a demo business. The `scripts/`
+folder also holds the end-to-end tests that run against a real Supabase
+project (RLS isolation, price cascade, matching and more).
 
-## Learn More
+## Project layout
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/          routes: (marketing) landing + auth, (app) the product, api/ route handlers
+components/   UI components
+lib/          domain logic: AI providers, matching, costing, market data, industries
+supabase/     SQL migrations and rollbacks
+scripts/      seeding, fixtures and end-to-end tests
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[MIT](LICENSE) © 2026 Sam Ramos
