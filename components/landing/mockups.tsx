@@ -10,7 +10,7 @@ export const BUTTER = [1.65, 1.6375, 1.65, 1.585, 1.575, 1.47, 1.515, 1.55, 1.46
 
 const MENU = [
   { name: "Butter Croissant", price: 4.5, cost: 0.5694, before: 88.64, after: 87.35 },
-  { name: "Chocolate Chip Cookie", price: 3.25, cost: 0.4903, before: 85.63, after: 84.92 },
+  { name: "Chocolate Chip Cookie", price: 3.25, cost: 0.4903, before: 85.63, after: 84.91 },
   { name: "Cookie 6-Pack", price: 16, cost: 2.9416, before: 82.49, after: 81.62 },
   { name: "Custard Cup", price: 5, cost: 0.6327, before: 87.35, after: 87.35 },
 ];
@@ -95,12 +95,11 @@ export function DashboardMock() {
           </div>
 
           <div className="overflow-hidden rounded-lg border border-stone-200 bg-white">
-            <p className={`border-b border-stone-200 bg-[#faf7f1] px-3 py-1.5 ${label}`}>Market watch · 90 days</p>
-            <div className="grid grid-cols-3 divide-x divide-stone-100">
+            <p className={`border-b border-stone-200 bg-[#faf7f1] px-3 py-1.5 ${label}`}>Market watch · national wholesale · 90 days</p>
+            <div className="grid grid-cols-2 divide-x divide-stone-100">
               {[
                 ["Wheat", "▲ 13.2%", WHEAT],
                 ["Eggs", "▲ 62.3%", EGGS],
-                ["Butter", "▼ 15.2%", BUTTER],
               ].map(([n, p, v]) => (
                 <div key={n as string} className="min-w-0 p-2.5">
                   <div className="flex justify-between text-[11px]">
@@ -239,7 +238,7 @@ export function MarketMock() {
   const cards: [string, string, string, number[], string][] = [
     ["Wheat, hard red winter", "+13.2%", "$7.53 → $8.52/bu", WHEAT, "Wheat prices are up 13.2% over 90 days — your All-Purpose Flour, Bread Flour costs may follow."],
     ["Eggs, large white", "+62.3%", "$0.24 → $0.39/dozen", EGGS, "Wholesale egg prices are up 62.3% over 90 days — your Large Eggs costs may follow."],
-    ["Butter, Grade AA (CME)", "−15.2%", "$1.65 → $1.40/lb", BUTTER, "Butter prices are down 15.2% over 90 days — your Unsalted Butter costs may ease."],
+    ["Butter, Grade AA (CME)", "−15.2%", "$1.65 → $1.40/lb", BUTTER, "Butter prices are down 15.2% over 90 days, but your Unsalted Butter went up 16.5% on your latest invoice — worth asking your supplier why."],
   ];
   return (
     <div className="space-y-2.5 bg-slate-50 p-4 text-left">
@@ -269,7 +268,7 @@ export function GridMock() {
   const rows = [
     ["AP FLOUR BLCHD 50# BG", "3", "BG", "21.48", "50", "lb", "64.44", ""],
     ["BUTTER SWT UNSLTD 36/1#", "1", "CS", "142.56", "36", "lb", "142.56", ""],
-    ["EGG LG GR AA LSE 15DZ", "2", "CS", "48.75", "15", "dozen", "79.50", "2 × $48.75 = $97.50, not $79.50"],
+    ["EGG LG GR AA LSE 15DZ", "2", "CS", "48.75", "15", "dozen", "97.50", ""],
     ["MILK WHL GAL 4/1", "1", "CS", "19.36", "4", "gal", "19.36", ""],
   ];
   return (
