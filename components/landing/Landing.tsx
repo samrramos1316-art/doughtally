@@ -24,13 +24,15 @@ const NAV = [
   ["Industries", "/#industries"],
 ] as const;
 
+// The same Sysco invoice as the rest of the page (mockups.tsx INVOICE_LINES):
+// line totals, and the same wording as "It reads the slip at the door".
 const RECEIPT = [
-  ["AP FLOUR 50# BG", "1", "21.75"],
+  ["AP FLOUR BLCHD 50# BG", "3", "64.44"],
   ["SUGAR GRAN 25#", "1", "18.90"],
   ["BUTTER SWT UNSLTD 36/1#", "1", "142.56"],
-  ["EGGS LG GR-A 15DZ", "1", "46.50"],
+  ["EGG LG GR AA LSE 15DZ", "2", "97.50"],
+  ["MILK WHL GAL 4/1", "1", "19.36"],
   ["HVY CRM 40% 1QT", "6", "31.38"],
-  ["VANILLA PURE 32OZ", "1", "38.00"],
 ];
 
 // One butter line, followed to a croissant's margin. Every number is plain arithmetic.
@@ -55,11 +57,11 @@ const bracket = workExample(EXAMPLES[3]);
 const STORIES: Record<"croissant" | "ring" | "arrangement" | "bracket", Story> = {
   croissant: {
     tab: EXAMPLES[0].tab,
-    vendor: "LONE STAR FOODSERVICE",
-    meta: "INV 7719-204583 · 09/26 · ROUTE 14",
+    vendor: "SYSCO CENTRAL TEXAS",
+    meta: "INV 7719-204583 · 09/22 · ROUTE 14",
     rows: RECEIPT,
     hit: "BUTTER",
-    total: "$299.09",
+    total: "$374.14",
     chain: CHAIN,
     stamp: "Fix: $5.02, or 2.82 oz less butter a batch",
   },

@@ -2,6 +2,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { selectAll } from "@/lib/supabase/selectAll";
 import type { Database } from "@/types/database";
 import { commodityFor } from "./categoryDefaults";
+import { summarize, type OwnMove } from "./summary";
+
+export { summarize };
 import type { IndustryProfile } from "@/lib/industries";
 
 type IndustryMarket = IndustryProfile["market"];
@@ -66,14 +69,28 @@ export async function getMarketTrends(
         .order("id")
         .range(a, b),
     ),
-    supabase.from("ingredients").select("name, category, commodity_code").order("name"),
+    supabase.from("ingredients").select("id, name, category, commodity_code").order("name"),
   ]);
+  // The business's own latest price move per ingredient in the window
+  // (price alerts, newest first), to set beside the market's.
+  const { data: alerts } = await supabase
+    .from("price_alerts")
+    .select("ingredient_id, pct_change, created_at")
+    .gte("created_at", new Date(Date.now() - windowDays * DAY).toISOString())
+    .order("created_at", { ascending: false })
+    .limit(500);
+  const latestMove = new Map<string, number>();
+  for (const a of alerts ?? []) if (!latestMove.has(a.ingredient_id) && a.pct_change != null) latestMove.set(a.ingredient_id, Number(a.pct_change));
   if (error) throw new Error("loading commodity prices failed: " + error.message);
 
   const exposure = new Map<string, string[]>();
+  const ownMoves = new Map<string, OwnMove[]>();
   for (const i of ingredients ?? []) {
     const code = commodityFor(i, market);
-    if (code) exposure.set(code, [...(exposure.get(code) ?? []), i.name]);
+    if (!code) continue;
+    exposure.set(code, [...(exposure.get(code) ?? []), i.name]);
+    const pct = latestMove.get(i.id);
+    if (pct != null) ownMoves.set(code, [...(ownMoves.get(code) ?? []), { ingredient: i.name, pct }]);
   }
 
   const byCode = new Map<string, NonNullable<typeof rows>>();
@@ -99,7 +116,14 @@ export async function getMarketTrends(
       pct_change: pct,
       points: series.filter((p) => p.period_date >= baseline.period_date).map((p) => ({ date: p.period_date, value: Number(p.value) })),
       exposed_ingredients: exposed,
-      summary: summarize(SHORT_NAME[code] ?? `${current.commodity_label} prices`, pct, windowDays, exposed),
+      // The biggest move of the business's own against the market, if any.
+      summary: summarize(
+        SHORT_NAME[code] ?? `${current.commodity_label} prices`,
+        pct,
+        windowDays,
+        exposed,
+        (ownMoves.get(code) ?? []).filter((m) => Math.sign(m.pct) !== Math.sign(pct)).sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct))[0] ?? null,
+      ),
     });
   }
 
@@ -109,14 +133,4 @@ export async function getMarketTrends(
       Number(b.exposed_ingredients.length > 0) - Number(a.exposed_ingredients.length > 0) ||
       Math.abs(b.pct_change) - Math.abs(a.pct_change),
   );
-}
-
-// "Wheat prices are up 13.2% over 90 days — your All-Purpose Flour, Bread
-// Flour costs may follow." Context, not a forecast (§7): no dollar amounts.
-export function summarize(name: string, pct: number, windowDays: number, exposed: string[]) {
-  const span = `over ${windowDays} days`;
-  const move = Math.abs(pct) < 1 ? `are roughly flat ${span}` : `are ${pct > 0 ? "up" : "down"} ${Math.abs(pct).toFixed(1)}% ${span}`;
-  if (!exposed.length || Math.abs(pct) < 1) return `${name} ${move}.`;
-  const list = exposed.length > 3 ? `${exposed.slice(0, 3).join(", ")} and ${exposed.length - 3} more` : exposed.join(", ");
-  return `${name} ${move} — your ${list} costs may ${pct > 0 ? "follow" : "ease"}.`;
 }
