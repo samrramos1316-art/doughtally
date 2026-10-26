@@ -405,6 +405,20 @@ Then:
 - The service worker keeps the newest 150 static files (cache v4).
 - Typed invoice lines are expanded by Claude Haiku 5.5 at low effort.
 
+## Homepage examples (2026-10-26)
+
+From an outside review, then every figure on the page recomputed:
+- The spreadsheet example's egg line totals 2 × $48.75 = $97.50 (it showed
+  a deliberate $79.50 "typo caught" that read as bad math).
+- One invoice throughout: the hero receipt is Sysco INV 7719-204583 of
+  09/22 like the rest of the page, with the same line wording as the
+  reading example; total $374.14.
+- The butter market series is real USDA data (down 15.2%) while the
+  example's supplier raised butter 16.5%. The dashboard strip shows wheat
+  and eggs; Market Watch now says when your own price moved against the
+  market (`lib/market/summary.ts`).
+- Cookie margin 84.91%, as $3.25 and the $0.4903 cost shown work out.
+
 ## Not started yet
 
 - Gemini vision provider (needs `GEMINI_API_KEY`).
