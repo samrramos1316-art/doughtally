@@ -14,7 +14,8 @@ const head = "px-3 py-2 text-left font-ledger text-[10px] font-normal tracking-[
 // cookies (lib/supabase/server.ts, lib/supabase/proxy.ts; @supabase/ssr's
 // default 400-day max-age), the install-card dismissal in localStorage
 // (components/pwa/InstallPrompt.tsx, 30 days), the password-reset marker
-// (app/(marketing)/auth-actions.ts, 1 hour), and the service worker's
+// (app/(marketing)/auth-actions.ts, 1 hour) and reset grant (lib/auth/
+// resetGrant.ts, 15 minutes), and the service worker's
 // cache (public/sw.js), and Vercel Web Analytics (components/analytics/
 // SiteAnalytics.tsx — cookieless, scrubbed URLs). Update this page when any
 // of that changes.
@@ -66,6 +67,11 @@ const sections: LegalSection[] = [
                 <td className={`${cell} font-ledger text-[12px] text-white`}>dt_pw_reset</td>
                 <td className={cell}>Set when you ask for a password reset, so the link from that email takes you to &ldquo;Choose a new password&rdquo; rather than your dashboard. It holds no personal information.</td>
                 <td className={cell}>Removed once the link is used; otherwise 1 hour</td>
+              </tr>
+              <tr>
+                <td className={`${cell} font-ledger text-[12px] text-white`}>dt_pw_reset_ok</td>
+                <td className={cell}>Set when you open a password reset link, to show it was opened in this browser, so only you can choose the new password. Signed by us; it holds your account ID and an expiry time.</td>
+                <td className={cell}>Removed once you save the new password; otherwise 15 minutes</td>
               </tr>
             </tbody>
           </table>

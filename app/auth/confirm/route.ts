@@ -4,6 +4,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { ONBOARDING_URL } from "@/lib/onboarding/paths";
 import { createClient } from "@/lib/supabase/server";
 import { RESET_COOKIE, type LoginErrorCode } from "@/lib/auth/loginErrors";
+import { makeResetGrant, RESET_GRANT_COOKIE, RESET_GRANT_TTL_MS } from "@/lib/auth/resetGrant";
 
 // Where the signup confirmation email lands. Supabase sends either a PKCE
 // `code` (its default link, via /auth/v1/verify) or a `token_hash` + `type`
@@ -45,6 +46,13 @@ export async function GET(request: NextRequest) {
   }
   if (reset) {
     jar.delete(RESET_COOKIE);
+    // The signed grant /reset-password requires (lib/auth/resetGrant.ts).
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const grant = user ? makeResetGrant(user.id) : null;
+    if (!grant) return NextResponse.redirect(new URL("/login?error=reset_expired", url));
+    jar.set(RESET_GRANT_COOKIE, grant, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: RESET_GRANT_TTL_MS / 1000 });
     return NextResponse.redirect(new URL("/reset-password", url));
   }
   // Otherwise a signup confirmation: a new business starts at the

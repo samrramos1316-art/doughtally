@@ -9,6 +9,7 @@ import { ONBOARDING_URL } from "@/lib/onboarding/paths";
 import { LEGAL_VERSION } from "@/lib/legal";
 import { isIndustryEnabled } from "@/lib/industries/gate";
 import { RESET_COOKIE } from "@/lib/auth/loginErrors";
+import { hasResetGrant, RESET_GRANT_COOKIE } from "@/lib/auth/resetGrant";
 import { z } from "zod";
 
 export type AuthActionState =
@@ -169,9 +170,15 @@ export async function updatePasswordAction(_prevState: AuthActionState, formData
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "This reset link has expired. Ask for a new one from the log-in page." };
+  const jar = await cookies();
+  if (!user || !hasResetGrant(jar.get(RESET_GRANT_COOKIE)?.value, user.id)) {
+    return { error: "This reset link has expired. Ask for a new one from the log-in page." };
+  }
   const { error } = await supabase.auth.updateUser({ password });
   if (error) return { error: friendly(error.message) };
+  jar.delete(RESET_GRANT_COOKIE);
+  // A reset is often because someone else got in: end every other session.
+  await supabase.auth.signOut({ scope: "others" });
   redirect("/dashboard");
 }
 
