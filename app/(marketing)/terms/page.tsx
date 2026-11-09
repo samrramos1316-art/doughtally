@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/legal/LegalPage";
-import { COMPANY, CONTACT_EMAIL, SITE } from "@/lib/legal";
+import { COMPANY, CONTACT_EMAIL, GOVERNING_STATE, OPERATOR, SITE, SOURCE_LICENSE } from "@/lib/legal";
 
 export const metadata: Metadata = { title: "Terms of Service · DoughTally Software" };
 export const viewport: Viewport = { themeColor: "#0c0b09" };
@@ -14,7 +14,7 @@ const sections: LegalSection[] = [
     title: "The agreement",
     body: (
       <>
-        <p>These terms are an agreement between you and {COMPANY} (&ldquo;DoughTally&rdquo;, &ldquo;we&rdquo;) for the use of {SITE} and the DoughTally app (the &ldquo;Service&rdquo;). By creating an account or using the Service you agree to them and to our <Link href="/privacy">Privacy Policy</Link>. If you&apos;re signing up for a business, you confirm you&apos;re allowed to accept these terms for it, and &ldquo;you&rdquo; means the business too.</p>
+        <p>These terms are an agreement between you and {COMPANY} (&ldquo;DoughTally&rdquo;, &ldquo;we&rdquo;), which is {OPERATOR}, for the use of {SITE} and the DoughTally app (the &ldquo;Service&rdquo;). By creating an account or using the Service you agree to them and to our <Link href="/privacy">Privacy Policy</Link>. If you&apos;re signing up for a business, you confirm you&apos;re allowed to accept these terms for it, and &ldquo;you&rdquo; means the business too.</p>
         <p>You must be at least 18, or the age of majority where you live, to use the Service.</p>
       </>
     ),
@@ -72,7 +72,7 @@ const sections: LegalSection[] = [
         <ul>
           <li>break the law, or use the Service to infringe anyone&apos;s rights;</li>
           <li>try to access other businesses&apos; data, probe or break our security, or overload the Service;</li>
-          <li>reverse-engineer the Service, scrape it, or resell it without our written agreement;</li>
+          <li>scrape the Service, or resell access to it, without our written agreement;</li>
           <li>upload malware or anything designed to cause harm.</li>
         </ul>
         <p>We may suspend accounts that do these things. Where it&apos;s reasonable, we&apos;ll warn you first.</p>
@@ -88,9 +88,12 @@ const sections: LegalSection[] = [
   },
   {
     id: "ours",
-    title: "Our property",
+    title: "Open source, and our name",
     body: (
-      <p>The Service itself (the software, design, text and the DoughTally name and logo) belongs to {COMPANY}. These terms give you the right to use it, not ownership of it. If you send us feedback, we may use it without owing you anything.</p>
+      <>
+        <p>DoughTally&apos;s source code is open source, published under the {SOURCE_LICENSE}. Your rights to the code itself come from that license, not from these terms, and nothing here limits them.</p>
+        <p>These terms cover the Service we run at {SITE}: our hosted copy of the software, the accounts on it and the data in it. The DoughTally name and logo belong to {COMPANY} and aren&apos;t licensed under the {SOURCE_LICENSE}, so if you run your own copy of the code, please give it a different name. If you send us feedback, we may use it without owing you anything.</p>
+      </>
     ),
   },
   {
@@ -136,7 +139,7 @@ const sections: LegalSection[] = [
     body: (
       <>
         <p>We may update these terms. If a change matters, we&apos;ll update the date above and let signed-up users know by email or in the app before it takes effect. Using the Service after that means you accept the new terms.</p>
-        <p>These terms are governed by the laws of the United States and of the state where {COMPANY} is established, without regard to conflict-of-law rules. If a part of them is found unenforceable, the rest still applies. Not enforcing a part isn&apos;t a waiver of it. These terms and the Privacy Policy are the whole agreement between us about the Service.</p>
+        <p>These terms are governed by the laws of the State of {GOVERNING_STATE} and of the United States, without regard to conflict-of-law rules. Any dispute about them or the Service will be decided in the state or federal courts located in {GOVERNING_STATE}, and you and we agree to those courts&apos; jurisdiction. If a part of them is found unenforceable, the rest still applies. Not enforcing a part isn&apos;t a waiver of it. These terms and the Privacy Policy are the whole agreement between us about the Service.</p>
       </>
     ),
   },

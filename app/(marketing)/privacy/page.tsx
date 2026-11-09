@@ -100,7 +100,7 @@ const sections: LegalSection[] = [
         <p>How long we keep each kind of information:</p>
         <ul>
           <li><strong>Account details, your business&apos;s records and your invoice files:</strong> while you have an account. You can edit or delete individual ingredients, recipes, menu items and invoice lines at any time.</li>
-          <li><strong>Menu and recipe photos you import:</strong> deleted as soon as you save the import, and within about a day if you don&apos;t finish it.</li>
+          <li><strong>Menu and recipe photos you import:</strong> deleted as soon as you save the import, and within two days if you don&apos;t finish it.</li>
           <li><strong>Request and error logs:</strong> kept by our hosting and database providers for their standard periods (typically days to a few weeks), then deleted.</li>
           <li><strong>After you delete your account:</strong> removed from the live service straight away; copies in our providers&apos; backups age out on their normal schedules (typically within 30 days).</li>
         </ul>
