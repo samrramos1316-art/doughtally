@@ -82,6 +82,14 @@ body {
   color: transparent;
   -webkit-text-stroke: 1.5px #ff5b1f;
 }
+/* Outlined text that fills with white as background-size grows (landing CTA). */
+.dt-fill-text {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgb(255 255 255 / 0.4);
+  background: linear-gradient(#fff, #fff) left / 100% 100% no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
 
 @keyframes dt-marquee {
   from { transform: translateX(0); }

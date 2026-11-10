@@ -5,10 +5,12 @@ import { INDUSTRIES } from "./index.ts";
 
 test("the croissant example is the landing page's butter story, to the cent", () => {
   const r = workExample(exampleFor("bakery")!);
-  assert.equal(r.marginBefore, 88.64);
-  assert.equal(r.marginAfter, 87.35);
-  assert.equal(Math.round(r.costAfter * 10000) / 10000, 0.5694);
-  assert.equal(r.fixPrice, 5.02);
+  assert.equal(Math.round(r.costBefore * 10000) / 10000, 1.5857);
+  assert.equal(Math.round(r.costAfter * 10000) / 10000, 1.6805);
+  assert.equal(r.marginBefore, 36.57);
+  assert.equal(r.marginAfter, 32.78);
+  assert.equal(r.priceMovePct, 29.8);
+  assert.equal(r.fixPrice, 2.65);
 });
 
 test("every example: a real industry, a price rise that lowers the margin, a fix that restores it", () => {

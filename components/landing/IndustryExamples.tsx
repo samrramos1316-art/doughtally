@@ -95,8 +95,9 @@ const CARDS: { key: string; title: string; industries: IndustryId[]; href: strin
 ];
 
 // For the site menu and footer: one link per industry card. "Other makers &
-// shops" has no page of its own, so it goes to the cards.
-export const INDUSTRY_LINKS = CARDS.map((c) => ({ label: c.title, href: c.key === "other" ? "/#industries" : c.href }));
+// shops" has no page of its own, so it goes where its card does: signup,
+// with "Other" picked.
+export const INDUSTRY_LINKS = CARDS.map((c) => ({ label: c.title, href: c.key === "other" ? "/signup?industry=other" : c.href }));
 
 export function IndustriesSection({ enabled }: { enabled: IndustryId[] }) {
   return (

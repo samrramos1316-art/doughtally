@@ -23,16 +23,19 @@ export type WorkedExample = {
 
 export const EXAMPLES: WorkedExample[] = [
   {
-    // The landing page's butter story (components/landing/Landing.tsx CHAIN):
-    // 36 lb case at $142.56 = $3.96/lb, was $3.40; croissant 88.64% → 87.35%.
+    // The landing page's butter story (components/landing/Landing.tsx): a
+    // 36 lb case at $142.56 = $3.96/lb, was $3.05 (+29.8%). Croissants sold
+    // wholesale to a café at $2.50, costed all-in with 40 min of lamination
+    // labor a batch: 36.57% → 32.78%, under a 35% target.
     id: "croissant",
     industry: "bakery",
     tab: "Bakery",
-    product: "Croissant",
-    price: 4.5,
+    product: "Wholesale croissant",
+    price: 2.5,
     perBatch: 12,
-    moved: { name: "Butter", unit: "lb", from: 3.4, to: 3.96, qty: 1.25 },
+    moved: { name: "Butter", unit: "lb", from: 3.05, to: 3.96, qty: 1.25 },
     rest: [{ name: "Flour, eggs, milk and the rest", cost: 1.8828 }],
+    labor: { minutes: 40, ratePerHour: 20 },
     invoiceLine: "BUTTER SWT UNSLTD 36/1# · $142.56",
   },
   {

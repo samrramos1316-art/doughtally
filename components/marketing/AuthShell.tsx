@@ -18,12 +18,12 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
           </p>
           <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
             <p className="font-ledger text-[11px] font-medium tracking-[0.12em] text-ember-400 uppercase">Price alert</p>
-            <p className="mt-1 font-medium text-white">Unsalted butter $3.40 → $3.96/lb</p>
-            <p className="text-sm text-stone-400">+16.5% · Sysco invoice 7719-204583</p>
+            <p className="mt-1 font-medium text-white">Unsalted butter $3.05 → $3.96/lb</p>
+            <p className="text-sm text-stone-400">+29.8% · Sysco invoice 7719-204583</p>
             <div className="mt-4 space-y-2 text-sm">
               {[
-                ["Butter Croissant", "88.6%", "87.3%"],
-                ["Cookie 6-Pack", "82.5%", "81.6%"],
+                ["Wholesale Croissant", "36.6%", "32.8%"],
+                ["Butter Croissant", "64.8%", "62.7%"],
               ].map(([name, before, after]) => (
                 <div key={name} className="flex items-center justify-between">
                   <span className="text-stone-300">{name}</span>

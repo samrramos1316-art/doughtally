@@ -13,6 +13,7 @@ import { AlertMock, DashboardMock, GridMock, InvoiceReadMock, MarketMock, SwipeM
 import { HeroExample, IndustriesSection, INDUSTRY_LINKS } from "./IndustryExamples";
 import type { IndustryId } from "@/lib/industries";
 import { EXAMPLES, workExample } from "@/lib/industries/examples";
+import { FOUNDER_EMAIL } from "@/lib/legal";
 
 gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP);
 
@@ -21,6 +22,7 @@ const NAV = [
   ["How it works", "#how"],
   ["The numbers", "#numbers"],
   ["FAQ", "#faq"],
+  ["About", "#about"],
   ["Industries", "/#industries"],
 ] as const;
 
@@ -35,16 +37,18 @@ const RECEIPT = [
   ["HVY CRM 40% 1QT", "6", "31.38"],
 ];
 
-// One butter line, followed to a croissant's margin. Every number is plain arithmetic.
+// One butter line, followed to the margin on croissants a bakery sells
+// wholesale to a café (lib/industries/examples.ts). Every number is plain arithmetic.
+const croissant = workExample(EXAMPLES[0]);
 const CHAIN = [
   { k: "the invoice line", v: 142.56, fmt: (n: number) => `$${n.toFixed(2)}`, d: "one 36 lb case of unsalted butter" },
-  { k: "per pound", v: 3.96, fmt: (n: number) => `$${n.toFixed(2)}`, d: "$142.56 ÷ 36 lb. Last case was $3.40." },
-  { k: "per croissant", v: 0.5694, fmt: (n: number) => `$${n.toFixed(4)}`, d: "all-in cost, with 1.25 lb of butter in every batch of 12" },
-  { k: "croissant margin", v: 87.35, fmt: (n: number) => `${n.toFixed(2)}%`, d: "sold at $4.50. It was 88.64% on Friday." },
+  { k: "per pound", v: 3.96, fmt: (n: number) => `$${n.toFixed(2)}`, d: "$142.56 ÷ 36 lb. Last case was $3.05, so butter is up 29.8%." },
+  { k: "per croissant", v: croissant.costAfter, fmt: (n: number) => `$${n.toFixed(2)}`, d: "all-in: 1.25 lb of butter per batch of 12, the rest of the dough, and 40 min of lamination at $20/h" },
+  { k: "croissant margin", v: croissant.marginAfter, fmt: (n: number) => `${n.toFixed(2)}%`, d: `sold to a café at $2.50. It was ${croissant.marginBefore.toFixed(2)}% last month, and your floor is 35%.` },
 ];
 
 // "Follow one line", per worked example (lib/industries/examples.ts). The
-// bakery's is the original story above; the others are fictional slips whose
+// bakery's is the story above; the others are fictional slips whose
 // numbers come from the same examples, so they agree with the hero card.
 // Receipt amounts are line totals, as on the bakery slip.
 type Step = { k: string; v: number; fmt: (n: number) => string; d: string };
@@ -63,7 +67,7 @@ const STORIES: Record<"croissant" | "ring" | "arrangement" | "bracket", Story> =
     hit: "BUTTER",
     total: "$374.14",
     chain: CHAIN,
-    stamp: "Fix: $5.02, or 2.82 oz less butter a batch",
+    stamp: `Fix: charge the café $${croissant.fixPrice!.toFixed(2)}`,
   },
   ring: {
     tab: EXAMPLES[1].tab,
@@ -155,7 +159,7 @@ const TOUR = [
     n: "03",
     tag: "understand",
     title: "Price moves, in menu items.",
-    body: "Butter up 16%? You see the three things you sell that use it, the margin each had yesterday and has today, and the exact fix: a new price, or a smaller portion.",
+    body: "Butter up 30%? You see the three things you sell that use it, the margin each had yesterday and has today, and the exact fix: a new price, or a smaller portion.",
     fine: "Options are plain arithmetic you can check by hand.",
     mock: <AlertMock />,
     frame: "browser" as const,
@@ -190,6 +194,7 @@ const FAQ = [
   ["Where does the market data come from?", "The USDA's Agricultural Marketing Service for daily wholesale eggs, butter and wheat, and the UN FAO Food Price Index. Wholesale markets don't move exactly like your distributor, so it's shown as direction only."],
   ["Can I get my data out?", "Any time, as a CSV. Edit it in a spreadsheet and import it back. Old invoices can be imported in bulk without changing today's costs."],
   ["Who can see my numbers?", "Only your account. Every row is locked to your business by the database itself, not just the app."],
+  ["What does it cost?", "Nothing while DoughTally is in early access, and no card to sign up. If paid plans come later, you'll hear about it well before any charge, nothing is billed unless you choose a plan, and you can export everything either way."],
 ];
 
 const TICKER = [
@@ -230,9 +235,9 @@ const COPY = {
     market: "The USDA's Agricultural Marketing Service for daily wholesale eggs, butter and wheat, and the UN FAO Food Price Index — food commodities only for now. Wholesale markets don't move exactly like your distributor, so it's shown as direction only.",
     footer: "DoughTally Software. Invoice-to-margin tracking for small businesses that make what they sell.",
     flow: "Invoice → cost → product → margin",
-    leakWords: "A supplier put your main material up twenty percent last month. Your price tag still says",
-    leakHit: "$95.",
-    leakBadge: "−1.8 pts margin",
+    leakWords: "Your butter went up thirty percent last month. The café still pays",
+    leakHit: "$2.50 a croissant.",
+    leakBadge: "margin 36.6% → 32.8%",
     storyTitle: "From the slip to the price tag.",
     leak2: "Nobody has time to re-cost everything they make when a delivery comes in. So we made the invoice do it: scan it, and the change shows up on the items it actually touches.",
     tourTitle: "price tag",
@@ -250,7 +255,7 @@ const COPY = {
     } as Record<number, readonly [string, string]>,
     tour: {
       0: { body: "Photo on your phone, or a pile of emailed PDFs. Each line comes back as what it actually is and what that works out to per pound, per gram, per stem." },
-      2: { title: "Price moves, in what you sell.", body: "A supply up 16%? You see everything you sell that uses it, the margin each had yesterday and has today, and the exact fix: a new price, or a little less of it." },
+      2: { title: "Price moves, in what you sell.", body: "A supply up 30%? You see everything you sell that uses it, the margin each had yesterday and has today, and the exact fix: a new price, or a little less of it." },
       3: { body: "For food businesses: USDA wholesale eggs, butter and wheat every day, and the FAO's global food indexes, tied to the ingredients you buy. Other industries' markets aren't tracked yet." },
     } as Record<number, { title?: string; body?: string }>,
   },
@@ -268,9 +273,9 @@ const COPY = {
     market: FAQ[3][1],
     footer: "DoughTally Software. Invoice-to-menu margin tracking for small food businesses.",
     flow: "Invoice → cost → recipe → margin",
-    leakWords: "A case of butter went up twenty dollars last month. Your croissants still cost",
-    leakHit: "$4.50.",
-    leakBadge: "−1.3 pts margin",
+    leakWords: "A case of butter went up thirty-three dollars last month. The café still pays",
+    leakHit: "$2.50 a croissant.",
+    leakBadge: "margin 36.6% → 32.8%",
     storyTitle: "From the slip to the menu board.",
     leak2: "Nobody has time to re-cost every recipe when a delivery comes in. So we made the invoice do it: scan it, and the change shows up on the items it actually touches.",
     tourTitle: "menu board",
@@ -448,8 +453,8 @@ export function Landing({ variant = "general", enabled = [] }: { variant?: "gene
           // ---- closing line fills left to right
           gsap.fromTo(
             q(".cta-fill"),
-            { clipPath: "inset(0 100% 0 0)" },
-            { clipPath: "inset(0 0% 0 0)", ease: "none", scrollTrigger: { trigger: q(".cta")[0], start: "top 75%", end: "center 45%", scrub: true } },
+            { backgroundSize: "0% 100%" },
+            { backgroundSize: "100% 100%", ease: "none", scrollTrigger: { trigger: q(".cta")[0], start: "top 75%", end: "center 45%", scrub: true } },
           );
 
           // ---- footer wordmark rises
@@ -657,7 +662,7 @@ export function Landing({ variant = "general", enabled = [] }: { variant?: "gene
                     See it on a real invoice
                   </a>
                 </div>
-                <p className="hero-fade mt-5 font-ledger text-[11px] tracking-wide text-[#7d766b]">free to use right now · no card · works on your phone</p>
+                <p className="hero-fade mt-5 font-ledger text-[11px] tracking-wide text-[#7d766b]">free during early access · no card · works on your phone</p>
               </div>
 
               <div className="relative flex justify-center lg:justify-end">
@@ -707,11 +712,11 @@ export function Landing({ variant = "general", enabled = [] }: { variant?: "gene
                 {w}{" "}
               </span>
             ))}
-            <span className="lit-word relative inline-block">
-              {copy.leakHit}
-              <span className="lit-hit absolute -top-3 -right-4 rotate-6 rounded-sm bg-[#ff5b1f] px-2 py-0.5 font-ledger text-[0.18em] leading-tight font-semibold tracking-wider whitespace-nowrap text-[#0c0b09] uppercase sm:-right-10">
-                {copy.leakBadge}
-              </span>
+            <span className="lit-word">{copy.leakHit}</span>{" "}
+            <span className="lit-hit ml-[0.15em] inline-block -translate-y-[0.35em] rotate-6 rounded-sm bg-[#ff5b1f] px-[0.6em] py-[0.25em] align-middle font-ledger text-[max(11px,0.2em)] leading-tight font-semibold tracking-wider whitespace-nowrap text-[#0c0b09] uppercase">
+              <span className="sr-only">(</span>
+              {copy.leakBadge}
+              <span className="sr-only">)</span>
             </span>
           </p>
           <div className="mt-16 grid gap-x-16 gap-y-6 text-[17px] leading-relaxed text-[#a79f92] md:grid-cols-[1fr_1fr] lg:ml-[30%]">
@@ -841,6 +846,35 @@ export function Landing({ variant = "general", enabled = [] }: { variant?: "gene
           </div>
         </section>
 
+        {/* --------------------------------------------------------- about */}
+        <section id="about" className="scroll-mt-16 border-t border-white/10">
+          <div className="mx-auto grid max-w-[1400px] gap-12 px-4 py-24 sm:px-8 sm:py-28 lg:grid-cols-[0.8fr_1.2fr]">
+            <div>
+              <p className="font-ledger text-[11px] tracking-[0.25em] text-[#ff5b1f] uppercase">Who built this</p>
+              <h2 data-lines className="mt-4 font-display text-4xl leading-[0.98] font-bold tracking-[-0.035em] text-white sm:text-5xl">
+                One person, answering every email.
+              </h2>
+            </div>
+            <div className="max-w-2xl space-y-5 text-[17px] leading-relaxed text-[#b5ad9f]">
+              <p>
+                I&apos;m Sammy, a 16-year-old in Orange County, California, and I build DoughTally myself. It&apos;s early, and
+                I&apos;m looking for small businesses who&apos;ll try it and tell me what&apos;s wrong with it.
+              </p>
+              <p>
+                If you try it, I&apos;d love to hear what worked, what didn&apos;t, and what you wish it did. If something
+                breaks, or you want your data out or deleted, write to me and I&apos;ll sort it out.
+              </p>
+              <a
+                href={`mailto:${FOUNDER_EMAIL}?subject=${encodeURIComponent("DoughTally feedback")}`}
+                className="inline-flex max-w-full items-center gap-2.5 rounded-full border border-white/15 px-6 py-3.5 text-[15px] font-medium break-all text-white transition hover:border-[#ff5b1f]"
+              >
+                {FOUNDER_EMAIL}
+                <Arrow className="h-4 w-4 shrink-0" />
+              </a>
+            </div>
+          </div>
+        </section>
+
         {/* ----------------------------------------------------------- faq */}
         <section id="faq" className="scroll-mt-16 border-t border-white/10">
           <div className="mx-auto grid max-w-[1400px] gap-12 px-4 py-28 sm:px-8 lg:grid-cols-[0.8fr_1.2fr]">
@@ -849,11 +883,15 @@ export function Landing({ variant = "general", enabled = [] }: { variant?: "gene
                 Fair questions.
               </h2>
               <p className="mt-5 max-w-xs text-[#a79f92]">
-                Anything else,{" "}
-                <Link href={appHref} className="text-white underline decoration-[#ff5b1f] underline-offset-4">
-                  log in
-                </Link>{" "}
-                and poke around. It&apos;s all in the product today.
+                Anything else? Email{" "}
+                <a href={`mailto:${FOUNDER_EMAIL}`} className="break-all text-white underline decoration-[#ff5b1f] underline-offset-4">
+                  {FOUNDER_EMAIL}
+                </a>{" "}
+                and I&apos;ll answer it myself. To see the app before signing up, swipe through the{" "}
+                <a href="#product" className="text-white underline decoration-[#ff5b1f] underline-offset-4">
+                  product tour
+                </a>
+                .
               </p>
             </div>
             <div className="border-t border-white/10">
@@ -877,11 +915,8 @@ export function Landing({ variant = "general", enabled = [] }: { variant?: "gene
         {/* ----------------------------------------------------------- cta */}
         <section className="cta relative overflow-hidden border-t border-white/10 px-4 py-24 sm:px-8 sm:py-32">
           <div className="mx-auto max-w-[1400px]">
-            <p className="relative font-display text-[11vw] leading-[0.9] font-extrabold tracking-[-0.05em] uppercase sm:text-[7.5vw]">
-              <span className="dt-outline block text-white/40">Stop hearing about price hikes from your bank.</span>
-              <span aria-hidden className="cta-fill absolute inset-0 block text-white">
-                Stop hearing about price hikes from your <span className="text-[#ff5b1f]">bank.</span>
-              </span>
+            <p className="cta-fill dt-fill-text font-display text-[11vw] leading-[0.9] font-extrabold tracking-[-0.05em] uppercase sm:text-[7.5vw]">
+              Catch the price hike before it eats your margin.
             </p>
             <div className="mt-14 flex flex-wrap items-center gap-4">
               <Link data-magnet href={startHref} className="group inline-flex items-center gap-2.5 rounded-full bg-[#ff5b1f] px-8 py-5 text-base font-semibold text-[#0c0b09] transition-colors hover:bg-[#ff7a45]">
@@ -926,6 +961,12 @@ export function Landing({ variant = "general", enabled = [] }: { variant?: "gene
                 </Link>
               </li>
             ))}
+            <li>
+              <a href={`mailto:${FOUNDER_EMAIL}`} className="text-[#a79f92] hover:text-white">
+                Contact: {FOUNDER_EMAIL}
+              </a>
+            </li>
+            <li className="font-ledger text-[11px] text-[#6d665c]">Free during early access</li>
           </ul>
         </div>
         <p aria-hidden className="ft-mark mt-10 flex justify-center overflow-hidden font-display text-[17vw] leading-[0.78] font-extrabold tracking-[-0.06em] text-[#1c1915] uppercase select-none">

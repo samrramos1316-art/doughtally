@@ -1,19 +1,24 @@
 import { MarginPill, Spark } from "./primitives";
 
-// Every figure below comes from the app itself: the Sysco invoice and bakery
-// used in its end-to-end tests, the +16.5% butter alert and the suggestions
-// computed for it, Claude's narrative for that alert, and real USDA series
+// An example bakery, worked with the app's own arithmetic: the Sysco invoice
+// from its end-to-end tests, a +29.8% butter rise ($3.05 → $3.96/lb), costs
+// all-in with labor (lib/costing/recipeCost.ts) and the suggestions
+// lib/suggestions/math.ts gives at a 35% target. The croissant matches
+// lib/industries/examples.ts. Market series are real USDA data
 // (Jun 26 – Sep 25, 2026, downsampled).
 export const WHEAT = [7.525, 7.735, 7.8425, 8.5, 8.61, 8.54, 8.325, 8.1475, 8.3075, 8.4575, 8.525, 9.3225, 9.205, 9.2375, 8.995, 8.7625, 8.52];
 export const EGGS = [0.2412, 0.2677, 0.4552, 0.5898, 0.8656, 1.1305, 1.078, 1.0011, 0.8329, 0.4632, 0.362, 0.3856, 0.3614, 0.3547, 0.3564, 0.3495, 0.3914];
 export const BUTTER = [1.65, 1.6375, 1.65, 1.585, 1.575, 1.47, 1.515, 1.55, 1.4625, 1.46, 1.445, 1.4625, 1.44, 1.37, 1.355, 1.34, 1.4];
 
+export const TARGET_MARGIN = 35;
+// Worst margin first, as the dashboard sorts it.
 const MENU = [
-  { name: "Butter Croissant", price: 4.5, cost: 0.5694, before: 88.64, after: 87.35 },
-  { name: "Chocolate Chip Cookie", price: 3.25, cost: 0.4903, before: 85.63, after: 84.91 },
-  { name: "Cookie 6-Pack", price: 16, cost: 2.9416, before: 82.49, after: 81.62 },
-  { name: "Custard Cup", price: 5, cost: 0.6327, before: 87.35, after: 87.35 },
-];
+  { name: "Wholesale Croissant (café)", price: 2.5, cost: 1.6805, before: 36.57, after: 32.78 },
+  { name: "Butter Croissant", price: 4.5, cost: 1.6805, before: 64.76, after: 62.66 },
+  { name: "Custard Cup", price: 5, cost: 1.85, before: 63.0, after: 63.0 },
+  { name: "Chocolate Chip Cookie", price: 3.25, cost: 0.8067, before: 76.35, after: 75.18 },
+].sort((a, b) => a.after - b.after);
+const AFFECTED = MENU.filter((m) => m.after < m.before);
 
 // The app's Overview as it looks today: the ink rail with its groups, the
 // ember "Add from a photo", paper behind white panels with mono labels.
@@ -55,7 +60,7 @@ export function DashboardMock() {
         <div className="flex flex-wrap items-end justify-between gap-2 border-b border-stone-200 bg-white px-4 py-3 sm:px-5">
           <div>
             <p className="font-display text-lg font-semibold tracking-tight text-stone-900">Overview</p>
-            <p className="text-[11px] text-stone-500">Target margin 65% · updated from invoice 7719-204583</p>
+            <p className="text-[11px] text-stone-500">Target margin {TARGET_MARGIN}% · updated from invoice 7719-204583</p>
           </div>
           <span className="rounded-md bg-[#0c0b09] px-2.5 py-1.5 text-[11px] font-medium text-white">Add from a photo</span>
         </div>
@@ -64,7 +69,7 @@ export function DashboardMock() {
           <div className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-white px-3 py-2 text-[12px]">
             <span className="text-stone-700">
               <span className="mr-1.5 inline-block h-1.5 w-1.5 -translate-y-px rounded-full bg-red-500" />
-              <span className="font-semibold text-stone-900">Unsalted butter ▲ 16.5%</span> ($3.40 → $3.96/lb) · 3 menu items affected
+              <span className="font-semibold text-stone-900">Unsalted butter ▲ 29.8%</span> ($3.05 → $3.96/lb) · {AFFECTED.length} menu items affected · 1 below target
             </span>
             <span className="shrink-0 font-medium text-[#c23a0b]">What to do →</span>
           </div>
@@ -81,7 +86,7 @@ export function DashboardMock() {
                         ${m.price.toFixed(2)} · costs ${m.cost.toFixed(4)}
                       </p>
                     </div>
-                    <MarginPill pct={m.after} />
+                    <MarginPill pct={m.after} target={TARGET_MARGIN} />
                   </div>
                   <div className="mt-1.5 flex items-end justify-between">
                     <Spark values={[m.before, m.before, m.before, m.before, m.after]} width={110} height={22} stroke={m.after < m.before ? "#dc2626" : "#059669"} />
@@ -199,12 +204,12 @@ export function AlertMock() {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[15px] font-semibold text-stone-900">Unsalted Butter price change</p>
-          <p className="text-[12px] text-stone-500">$3.40/lb → $3.96/lb (+16.5%) · Sysco · Sep 22</p>
+          <p className="text-[12px] text-stone-500">$3.05/lb → $3.96/lb (+29.8%) · Sysco · Sep 22</p>
         </div>
-        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">+16.5%</span>
+        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">+29.8%</span>
       </div>
       <div className="overflow-hidden rounded-xl ring-1 ring-stone-900/5">
-        {MENU.slice(0, 3).map((m) => (
+        {AFFECTED.map((m) => (
           <div key={m.name} className="flex items-center justify-between border-b border-stone-100 px-3 py-2 text-[12px] last:border-0">
             <span className="text-stone-700">{m.name}</span>
             <span className="flex gap-3 tabular-nums">
@@ -216,19 +221,19 @@ export function AlertMock() {
         ))}
       </div>
       <div className="rounded-xl bg-stone-50 p-3 text-[12px] text-stone-700 ring-1 ring-stone-900/5">
-        <p className="font-medium text-stone-900">Butter Croissant</p>
+        <p className="font-medium text-stone-900">Wholesale Croissant (café) · now below your 35% target</p>
         <p className="mt-1">
-          Raise it from $4.50 to <span className="font-semibold">$5.02</span> (+$0.52) to keep its 88.64% margin.
+          Raise it from $2.50 to <span className="font-semibold">$2.59</span> (+$0.09) to get back to 35%, or to{" "}
+          <span className="font-semibold">$2.65</span> to keep its old 36.57%.
         </p>
         <p className="mt-0.5">
-          Or use <span className="font-semibold">2.82 oz less unsalted butter</span> per batch at the same price.
+          Or use <span className="font-semibold">2.69 oz less unsalted butter</span> per batch at the same price.
         </p>
       </div>
       <div className="rounded-xl bg-blue-50 p-3 text-[12px] leading-relaxed text-blue-950 ring-1 ring-blue-100">
         <p className="mb-1 text-[10px] font-semibold tracking-wide text-blue-700 uppercase">AI summary</p>
-        “All three items are still comfortably above your 65% target, so absorbing this is a perfectly reasonable call.
-        If you do want the old margins back, don&apos;t touch the croissant&apos;s butter: it&apos;s the whole point of the
-        item…”
+        “The café croissant is the one to act on: it&apos;s now under your 35% target, at 32.78%. Don&apos;t cut its
+        butter, it&apos;s the whole point of a croissant. Asking the café for $2.65 gets back its old 36.57%…”
       </div>
     </div>
   );
@@ -238,7 +243,7 @@ export function MarketMock() {
   const cards: [string, string, string, number[], string][] = [
     ["Wheat, hard red winter", "+13.2%", "$7.53 → $8.52/bu", WHEAT, "Wheat prices are up 13.2% over 90 days — your All-Purpose Flour, Bread Flour costs may follow."],
     ["Eggs, large white", "+62.3%", "$0.24 → $0.39/dozen", EGGS, "Wholesale egg prices are up 62.3% over 90 days — your Large Eggs costs may follow."],
-    ["Butter, Grade AA (CME)", "−15.2%", "$1.65 → $1.40/lb", BUTTER, "Butter prices are down 15.2% over 90 days, but your Unsalted Butter went up 16.5% on your latest invoice — worth asking your supplier why."],
+    ["Butter, Grade AA (CME)", "−15.2%", "$1.65 → $1.40/lb", BUTTER, "Butter prices are down 15.2% over 90 days, but your Unsalted Butter went up 29.8% on your latest invoice — worth asking your supplier why."],
   ];
   return (
     <div className="space-y-2.5 bg-slate-50 p-4 text-left">

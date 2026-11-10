@@ -11,4 +11,6 @@ export const PRIVACY_UPDATED = "October 25, 2026";
 export const COOKIES_UPDATED = "October 25, 2026";
 export const COMPANY = "DoughTally Software";
 export const CONTACT_EMAIL = "support@doughtally.app";
+// The person who builds it, for feedback and the landing page's About section.
+export const FOUNDER_EMAIL = "samr.ramos1316@gmail.com";
 export const SITE = "doughtally.app";
