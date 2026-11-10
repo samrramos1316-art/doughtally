@@ -194,6 +194,7 @@ const FAQ = [
   ["Where does the market data come from?", "The USDA's Agricultural Marketing Service for daily wholesale eggs, butter and wheat, and the UN FAO Food Price Index. Wholesale markets don't move exactly like your distributor, so it's shown as direction only."],
   ["Can I get my data out?", "Any time, as a CSV. Edit it in a spreadsheet and import it back. Old invoices can be imported in bulk without changing today's costs."],
   ["Who can see my numbers?", "Only your account. Every row is locked to your business by the database itself, not just the app."],
+  ["Does AI read my invoices? Is it trained on them?", "Yes, it reads them: Anthropic's Claude turns photos and PDFs into line items, and Voyage AI matches item names (text only). Both work under commercial terms that don't let them train their models on your data. The Privacy Policy lists exactly what each one receives."],
   ["What does it cost?", "Nothing while DoughTally is in early access, and no card to sign up. If paid plans come later, you'll hear about it well before any charge, nothing is billed unless you choose a plan, and you can export everything either way."],
 ];
 
@@ -617,7 +618,7 @@ export function Landing({ variant = "general", enabled = [] }: { variant?: "gene
             <div className="hero-fade flex flex-wrap items-center justify-between gap-3 border-y border-white/10 py-2 font-ledger text-[10px] tracking-[0.2em] text-[#8f877b] uppercase sm:text-[11px]">
               <span>{copy.flow}</span>
               <span className="hidden sm:inline">{copy.strip}</span>
-              <span className="text-[#ff5b1f]">● Live on doughtally.app</span>
+              <span className="text-[#ff5b1f]">● Early access · free</span>
             </div>
 
             <p className="sr-only">DoughTally Software</p>
@@ -659,7 +660,7 @@ export function Landing({ variant = "general", enabled = [] }: { variant?: "gene
                     <Arrow className="h-4 w-4 transition group-hover:translate-x-1" />
                   </Link>
                   <a href="#numbers" className="rounded-full border border-white/15 px-6 py-4 text-[15px] font-medium text-white transition hover:border-white/40">
-                    See it on a real invoice
+                    Follow one invoice line
                   </a>
                 </div>
                 <p className="hero-fade mt-5 font-ledger text-[11px] tracking-wide text-[#7d766b]">free during early access · no card · works on your phone</p>
@@ -734,13 +735,12 @@ export function Landing({ variant = "general", enabled = [] }: { variant?: "gene
                 {copy.storyTitle}
               </h2>
               {variant === "general" && (
-                <div role="tablist" aria-label="Whose invoice" className="mt-6 inline-flex gap-1 rounded-full border border-white/10 p-1">
+                <div role="group" aria-label="Whose invoice" className="mt-6 inline-flex gap-1 rounded-full border border-white/10 p-1">
                   {(Object.keys(STORIES) as StoryId[]).map((id) => (
                     <button
                       key={id}
                       type="button"
-                      role="tab"
-                      aria-selected={id === storyId}
+                      aria-pressed={id === storyId}
                       onClick={() => {
                         setStoryId(id);
                         setSwitched(true);
@@ -908,6 +908,17 @@ export function Landing({ variant = "general", enabled = [] }: { variant?: "gene
                   <p className="max-w-2xl pr-8 pb-6 pl-9 text-[16px] leading-relaxed text-[#a79f92]">{a}</p>
                 </details>
               ))}
+              <p className="pt-6 pl-9 text-[14px] text-[#8f877b]">
+                The details are in the{" "}
+                <Link href="/privacy" className="text-white underline decoration-[#ff5b1f] underline-offset-4">
+                  Privacy Policy
+                </Link>{" "}
+                and{" "}
+                <Link href="/terms" className="text-white underline decoration-[#ff5b1f] underline-offset-4">
+                  Terms
+                </Link>
+                , written to be read.
+              </p>
             </div>
           </div>
         </section>

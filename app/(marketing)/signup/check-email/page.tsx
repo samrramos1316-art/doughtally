@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthShell } from "@/components/marketing/AuthShell";
 import { ResendForm } from "@/components/auth/ResendForm";
+
+export const metadata: Metadata = { title: "Check your email · DoughTally", robots: { index: false } };
 
 export default async function CheckEmailPage({ searchParams }: { searchParams: Promise<{ email?: string }> }) {
   const { email = "" } = await searchParams;

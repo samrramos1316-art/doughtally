@@ -1,3 +1,4 @@
+import { SHARE_IMAGE } from "@/lib/share";
 import type { Metadata, Viewport } from "next";
 import { Landing } from "@/components/landing/Landing";
 import { enabledIndustries } from "@/lib/industries/gate";
@@ -10,7 +11,7 @@ const description =
 export const metadata: Metadata = {
   title: "DoughTally — know what every product really costs you",
   description,
-  openGraph: { title: "Know what every product really costs you", description },
+  openGraph: { title: "Know what every product really costs you", description, images: SHARE_IMAGE },
 };
 
 // The marketing front page: a client component (its scroll animations need

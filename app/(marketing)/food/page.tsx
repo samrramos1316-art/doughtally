@@ -1,3 +1,4 @@
+import { SHARE_IMAGE } from "@/lib/share";
 import type { Metadata, Viewport } from "next";
 import { Landing } from "@/components/landing/Landing";
 
@@ -9,7 +10,7 @@ const description =
 export const metadata: Metadata = {
   title: "DoughTally for bakeries, food trucks & caterers",
   description,
-  openGraph: { title: "DoughTally for bakeries, food trucks & caterers", description },
+  openGraph: { title: "DoughTally for bakeries, food trucks & caterers", description, images: SHARE_IMAGE },
 };
 
 // The food-business page, as the home page was before it went general.

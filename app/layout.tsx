@@ -43,6 +43,8 @@ export const metadata: Metadata = {
     title: "DoughTally",
     description: "Snap a photo of a supplier invoice. Your costs and margins update, and you get warned before a price change eats your profit.",
   },
+  // Big preview card when the link is shared (the image is app/opengraph-image.tsx).
+  twitter: { card: "summary_large_image" },
   applicationName: "DoughTally",
   // Home-screen behaviour on iOS (the manifest covers everyone else).
   appleWebApp: { capable: true, title: "DoughTally", statusBarStyle: "default" },

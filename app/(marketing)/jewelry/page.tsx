@@ -1,3 +1,4 @@
+import { SHARE_IMAGE } from "@/lib/share";
 import type { Metadata, Viewport } from "next";
 import { IndustryPage } from "@/components/landing/IndustryPage";
 import { INDUSTRIES } from "@/lib/industries";
@@ -9,7 +10,7 @@ const description = `DoughTally for jewelers: ${INDUSTRIES.jewelry.description} 
 export const metadata: Metadata = {
   title: "DoughTally for jewelers",
   description,
-  openGraph: { title: "DoughTally for jewelers", description },
+  openGraph: { title: "DoughTally for jewelers", description, images: SHARE_IMAGE },
 };
 
 export default function JewelersPage() {

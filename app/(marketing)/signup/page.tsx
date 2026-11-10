@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthShell } from "@/components/marketing/AuthShell";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { CLOSED_MESSAGE, accessClosed } from "@/lib/access";
 import { industryOptions, isIndustryEnabled } from "@/lib/industries/gate";
+
+export const metadata: Metadata = { title: "Create your account · DoughTally" };
 
 // ?industry= (from an industry page) preselects the picker when that
 // industry is offered.

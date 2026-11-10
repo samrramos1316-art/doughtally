@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/marketing/AuthShell";
 import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { hasResetGrant, RESET_GRANT_COOKIE } from "@/lib/auth/resetGrant";
+
+export const metadata: Metadata = { title: "Choose a new password · DoughTally", robots: { index: false } };
 
 // Where a password reset link lands (via /auth/confirm, signed in, with the
 // signed grant it sets). Signed in alone isn't enough.

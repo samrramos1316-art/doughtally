@@ -19,13 +19,12 @@ export function HeroExample() {
     <div className="hero-ticker relative w-full max-w-md rotate-[1.5deg] rounded-md border border-white/10 bg-[#14120f]/90 p-5 shadow-[0_40px_120px_-30px_rgba(255,91,31,0.35)] backdrop-blur">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="rounded-sm border border-[#ece4d6]/30 px-1.5 py-0.5 font-ledger text-[10px] tracking-[0.2em] text-[#ece4d6] uppercase">Example</span>
-        <div role="tablist" aria-label="Worked example" className="flex gap-1 rounded-full border border-white/10 p-0.5">
+        <div role="group" aria-label="Worked example" className="flex gap-1 rounded-full border border-white/10 p-0.5">
           {EXAMPLES.map((e) => (
             <button
               key={e.id}
               type="button"
-              role="tab"
-              aria-selected={e.id === ex.id}
+              aria-pressed={e.id === ex.id}
               onClick={() => setId(e.id)}
               className={`rounded-full px-2.5 py-1 font-ledger text-[11px] transition-colors ${e.id === ex.id ? "bg-[#ff5b1f] text-[#0c0b09]" : "text-[#a79f92] hover:text-white"}`}
             >
@@ -46,7 +45,7 @@ function ExampleBody({ ex, r }: { ex: WorkedExample; r: ReturnType<typeof workEx
     ["Margin", `${r.marginBefore.toFixed(2)}%`, `${r.marginAfter.toFixed(2)}%`],
   ];
   return (
-    <div role="tabpanel" aria-label={`${ex.product} example`}>
+    <div aria-live="polite" aria-label={`${ex.product} example`}>
       <p className="mt-4 truncate font-ledger text-[12px] text-[#8f877b]">{ex.invoiceLine}</p>
       <p className="mt-1 text-[14px] text-[#ece4d6]">
         {ex.moved.name} up <span className="text-[#ff5b1f]">{r.priceMovePct}%</span> → your {ex.product.toLowerCase()} sold at {money(ex.price)}

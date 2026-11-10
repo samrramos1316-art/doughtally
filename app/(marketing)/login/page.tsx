@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/marketing/AuthShell";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { createClient } from "@/lib/supabase/server";
 import { canUseApp } from "@/lib/access";
 import { loginErrorMessage } from "@/lib/auth/loginErrors";
+
+export const metadata: Metadata = { title: "Log in · DoughTally", robots: { index: false } };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;

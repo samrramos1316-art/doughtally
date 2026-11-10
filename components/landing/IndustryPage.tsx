@@ -4,7 +4,7 @@ import { INDUSTRIES, type IndustryId } from "@/lib/industries";
 import { isIndustryEnabled } from "@/lib/industries/gate";
 import { exampleFor, workExample } from "@/lib/industries/examples";
 import { lower } from "@/lib/vocab";
-import { CONTACT_EMAIL } from "@/lib/legal";
+import { CONTACT_EMAIL, FOUNDER_EMAIL } from "@/lib/legal";
 
 const money = (n: number) => `$${n.toFixed(2)}`;
 const label = (category: string) => category.replace(/_/g, " ");
@@ -46,9 +46,12 @@ export function IndustryPage({ id, audience }: { id: IndustryId; audience: strin
         </p>
 
         {open ? (
-          <Link href={`/signup?industry=${id}`} className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#ff5b1f] px-7 py-4 text-[15px] font-semibold text-[#0c0b09] hover:bg-[#ff7a45]">
-            Create your account
-          </Link>
+          <div className="mt-8">
+            <Link href={`/signup?industry=${id}`} className="inline-flex items-center gap-2 rounded-full bg-[#ff5b1f] px-7 py-4 text-[15px] font-semibold text-[#0c0b09] hover:bg-[#ff7a45]">
+              Create your account
+            </Link>
+            <p className="mt-4 font-ledger text-[11px] tracking-wide text-[#7d766b]">free during early access · no card · works on your phone</p>
+          </div>
         ) : (
           <div className="mt-8 max-w-2xl rounded-md border border-white/15 bg-white/[0.03] p-5" data-testid="waitlist">
             <p className="font-ledger text-[11px] tracking-[0.2em] text-[#ff5b1f] uppercase">Waitlist</p>
@@ -108,7 +111,11 @@ export function IndustryPage({ id, audience }: { id: IndustryId; audience: strin
         </div>
       </main>
 
-      <footer className="border-t border-white/10 py-6 text-center font-ledger text-[11px] tracking-wider text-[#6d665c]">
+      <footer className="border-t border-white/10 px-4 py-6 text-center font-ledger text-[11px] tracking-wider text-[#6d665c]">
+        <p className="mb-3 font-body text-[14px] tracking-normal text-[#a79f92]">
+          Questions, or want to see it first? Email{" "}
+          <a href={`mailto:${FOUNDER_EMAIL}`} className="whitespace-nowrap text-white underline decoration-[#ff5b1f] underline-offset-4">{FOUNDER_EMAIL}</a>.
+        </p>
         <span>© 2026 DoughTally Software · </span>
         <Link href="/privacy" className="hover:text-white">Privacy</Link> · <Link href="/terms" className="hover:text-white">Terms</Link> · <Link href="/cookies" className="hover:text-white">Cookies</Link>
       </footer>
