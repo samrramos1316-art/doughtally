@@ -3,12 +3,20 @@
 // instead of an empty state. Safe to re-run: wipes and recreates the demo
 // org each time.
 //
-// Run: node scripts/seed-demo-data.mjs
+// Run: DEMO_PASSWORD='something long and private' node scripts/seed-demo-data.mjs
+//
+// The repository is public, so the demo password is never written here: a
+// password in the code would let anyone log in to a demo account seeded on
+// the live project.
 import { getAdminClient } from "./lib/supabaseTestEnv.mjs";
 
-const admin = getAdminClient();
 const DEMO_EMAIL = "demo@doughline.test";
-const DEMO_PASSWORD = "DoughlineDemo123!";
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? "";
+if (DEMO_PASSWORD.length < 12) {
+  console.error("Set DEMO_PASSWORD (12+ characters, not one used anywhere else) to seed the demo account.");
+  process.exit(1);
+}
+const admin = getAdminClient();
 
 function daysAgo(n) {
   const d = new Date();
@@ -111,7 +119,7 @@ async function main() {
   if (menuErr) throw new Error("insert menu_items failed: " + menuErr.message);
 
   console.log("\nDemo data seeded successfully.");
-  console.log(`Log in at /login with:\n  email:    ${DEMO_EMAIL}\n  password: ${DEMO_PASSWORD}`);
+  console.log(`Log in at /login as ${DEMO_EMAIL} with the DEMO_PASSWORD you set.`);
 }
 
 main().catch((err) => {

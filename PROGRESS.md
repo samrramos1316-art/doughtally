@@ -27,7 +27,7 @@ Snapshot of what's been built and tested so far, against the build order in
     return the same numbers.
 - **Step 4 — dashboard visual layer** (`13db2aa`): `MarginHealthBadge`,
   `TrendSparkline`, `MenuItemCard`, dashboard grid; demo data seeded via
-  `scripts/seed-demo-data.mjs` (`demo@doughline.test` / `DoughlineDemo123!`).
+  `scripts/seed-demo-data.mjs` (`demo@doughline.test`, password from `DEMO_PASSWORD`).
   - Verified: build/lint clean, routes smoke-tested; visual/interaction
     quality was explicitly left for manual review, not self-verified.
 

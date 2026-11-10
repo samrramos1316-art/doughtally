@@ -66,7 +66,7 @@ npm test        # unit tests
 npm run lint
 ```
 
-`node scripts/seed-demo-data.mjs` seeds a demo business. The `scripts/`
+`DEMO_PASSWORD=… node scripts/seed-demo-data.mjs` seeds a demo business. The `scripts/`
 folder also holds the end-to-end tests that run against a real Supabase
 project (RLS isolation, price cascade, matching and more).
 

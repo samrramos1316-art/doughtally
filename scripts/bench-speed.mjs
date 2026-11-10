@@ -28,7 +28,7 @@ try {
   page.setDefaultTimeout(60_000);
   await page.goto(`${BASE}/login`);
   await page.getByLabel("Email").fill("demo@doughline.test");
-  await page.getByLabel("Password", { exact: true }).fill("DoughlineDemo123!");
+  await page.getByLabel("Password", { exact: true }).fill(process.env.DEMO_PASSWORD ?? "");
   await page.getByRole("button", { name: /log in/i }).click();
   await page.waitForURL(/\/dashboard/);
 
